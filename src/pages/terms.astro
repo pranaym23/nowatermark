@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE } from '../lib/site';
+
+const title = 'Terms of Use | NoWatermark';
+const description =
+  'Terms for using NoWatermark: no guarantees of undetectability, you must have rights to the content you process, and disclosure obligations remain yours.';
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/terms">
+  <div class="nw-shell-narrow pt-8">
+    <Breadcrumbs trail={[{ href: '/terms', label: 'Terms' }]} />
+
+    <header class="mt-6">
+      <h1 class="text-3xl font-bold">Terms of use</h1>
+      <p class="mt-3 text-lg nw-muted">
+        Plain-language terms. The important ones are about what our results do and do not mean.
+      </p>
+    </header>
+
+    <div class="nw-content mt-10">
+      <h2>The service</h2>
+      <p>
+        NoWatermark provides free browser-based tools for inspecting and removing metadata from
+        images and text. Processing happens on your device; we do not receive, store or process your
+        files.
+      </p>
+
+      <h2>Your content and your rights</h2>
+      <p>
+        You must have the right to process any content you put into these tools. Removing
+        provenance, attribution or copyright information from work you do not own may be unlawful in
+        some jurisdictions, and may breach the terms of the platform you obtained it from.
+        Responsibility for that rests with you.
+      </p>
+
+      <h2>No guarantee of undetectability</h2>
+      <p>This is the most important thing on this page, so we will be direct about it.</p>
+      <ul>
+        <li>
+          We do not guarantee that content processed with these tools is undetectable as
+          AI-generated, by any detector, now or in future.
+        </li>
+        <li>
+          The absence of a detected signal does not prove the absence of every watermark. Some
+          watermarks — SynthID and statistical text watermarks among them — cannot be detected by
+          any browser-based tool, so we can neither confirm nor deny their presence.
+        </li>
+        <li>
+          Removing a C2PA manifest does not necessarily prevent provenance from being recovered.
+          Durable Content Credentials can be re-associated with an image by a provider using an
+          invisible watermark or content fingerprint held in their own systems.
+        </li>
+      </ul>
+
+      <h2>Disclosure obligations remain yours</h2>
+      <p>
+        Platform rules, professional codes, and legal requirements around disclosing AI-generated
+        content apply regardless of what metadata a file carries. Removing a metadata field does not
+        remove an obligation to disclose.
+      </p>
+
+      <h2>Results are provided as-is</h2>
+      <p>
+        The tools are offered without warranty of any kind. Scan results are our best interpretation
+        of the data present in a file and may be incomplete or, for malformed files, incorrect.
+        Always keep your original file: our cleaners never modify it, and produce a separate copy.
+      </p>
+
+      <h2>Acceptable use</h2>
+      <p>
+        Do not use these tools to facilitate fraud, impersonation, harassment, or the removal of
+        ownership information from content belonging to other people.
+      </p>
+
+      <h2>Liability</h2>
+      <p>
+        To the fullest extent permitted by law, we are not liable for any loss or damage arising
+        from use of this site, including any consequence of relying on a scan result or of removing
+        metadata from a file.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions can go to <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.
+      </p>
+    </div>
+  </div>
+
+  <div class="h-16"></div>
+</BaseLayout>

@@ -1,0 +1,73 @@
+---
+/**
+ * Base document shell.
+ *
+ * Every indexable page gets a unique title, description, canonical URL and
+ * social-card metadata (PRD §27). No third-party script is loaded here —
+ * analytics and advertising are additive and must never gate the tools.
+ */
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../lib/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path only, e.g. "/exif-remover". Defaults to the current route. */
+  canonicalPath?: string;
+  noindex?: boolean;
+  /** JSON-LD objects to embed. */
+  schema?: unknown[];
+}
+
+const { title, description, canonicalPath, noindex = false, schema = [] } = Astro.props;
+
+const path = canonicalPath ?? Astro.url.pathname.replace(/\/$/, '');
+const canonical = new URL(path || '/', SITE.url).href;
+const ogImage = new URL('/og.svg', SITE.url).href;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#4f46e5" />
+
+    {
+      schema.map((item) => (
+        <script type="application/ld+json" set:html={JSON.stringify(item)} is:inline />
+      ))
+    }
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-lg focus:bg-[var(--nw-surface)] focus:px-4 focus:py-2 focus:shadow"
+      >Skip to content</a
+    >
+    <Header />
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

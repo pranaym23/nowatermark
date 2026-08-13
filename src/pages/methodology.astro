@@ -1,0 +1,150 @@
+---
+/**
+ * The trust layer (PRD §46).
+ *
+ * The capability table is rendered from src/lib/signals.ts, so this page
+ * cannot drift out of sync with what the code actually does.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { CAPABILITY_MATRIX } from '../lib/signals';
+
+const title = 'Methodology — What NoWatermark Can and Cannot Do | NoWatermark';
+const description =
+  'Exactly what NoWatermark inspects, what it can remove, what it cannot verify, and how browser-based processing works. Our capability matrix, in full.';
+
+const mark = (value: boolean | 'target') =>
+  value === true ? 'Yes' : value === 'target' ? 'Partial' : 'No';
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/methodology">
+  <div class="nw-shell-narrow pt-8">
+    <Breadcrumbs trail={[{ href: '/methodology', label: 'Methodology' }]} />
+
+    <header class="mt-6">
+      <h1 class="text-3xl font-bold">Methodology</h1>
+      <p class="mt-3 text-lg nw-muted">
+        What we inspect, what we can remove, and — the part most tools leave out — what we cannot
+        determine at all.
+      </p>
+    </header>
+
+    <div class="nw-content mt-10">
+      <h2>Capability matrix</h2>
+      <p>
+        This table is generated from the same configuration the scanner and cleaners read. If a row
+        says No, the product cannot make that claim anywhere in the interface.
+      </p>
+    </div>
+
+    <div class="nw-scroll-x mt-4">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr>
+            <th class="border p-2.5 text-start" style="border-color: var(--nw-border); background-color: var(--nw-surface-muted);">Signal</th>
+            <th class="border p-2.5 text-start" style="border-color: var(--nw-border); background-color: var(--nw-surface-muted);">Detect</th>
+            <th class="border p-2.5 text-start" style="border-color: var(--nw-border); background-color: var(--nw-surface-muted);">Remove</th>
+            <th class="border p-2.5 text-start" style="border-color: var(--nw-border); background-color: var(--nw-surface-muted);">Verify</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            CAPABILITY_MATRIX.map((row) => (
+              <tr>
+                <td class="border p-2.5 align-top" style="border-color: var(--nw-border);">
+                  <span class="font-medium">{row.label}</span>
+                  {row.note && <span class="mt-1 block text-xs nw-muted">{row.note}</span>}
+                </td>
+                <td class="border p-2.5 align-top" style="border-color: var(--nw-border);">{mark(row.detect)}</td>
+                <td class="border p-2.5 align-top" style="border-color: var(--nw-border);">{mark(row.remove)}</td>
+                <td class="border p-2.5 align-top" style="border-color: var(--nw-border);">{mark(row.verify)}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nw-content mt-12">
+      <h2>How processing works</h2>
+      <p>
+        When you select a file, the browser reads it into memory and hands the bytes to a Web Worker
+        running on your own device. The worker identifies the real format from its magic bytes —
+        never the extension or the reported MIME type — walks the container structure, and extracts
+        the metadata blocks it recognises.
+      </p>
+      <p>
+        Cleaning rewrites the container without the metadata structures and copies the compressed
+        image data through untouched. Nothing is decoded and nothing is re-encoded, so the pixels in
+        the output are bit-identical to the input.
+      </p>
+      <p>
+        The cleaned bytes are then scanned a second time, and the before-and-after report you see is
+        the difference between those two scans. A signal is reported as removed only because a fresh
+        scan can no longer find it — never because a cleaner asserted it.
+      </p>
+
+      <h2>What we keep on purpose</h2>
+      <p>
+        <strong>Colour profiles.</strong> ICC profiles carry no personal or provenance information,
+        and removing one visibly shifts an image's colours. We report them as detected and
+        deliberately preserved.
+      </p>
+      <p>
+        <strong>Image rotation.</strong> Phones record orientation in an EXIF tag rather than
+        rotating pixels. Stripping it makes portrait photos display sideways. When a file carries a
+        rotation, we preserve exactly that one field, say so in the report, and offer a switch to
+        remove it anyway.
+      </p>
+      <p>
+        <strong>Structural data.</strong> JFIF headers, Adobe colour-transform markers, and every
+        critical chunk needed to decode the image.
+      </p>
+
+      <h2>The three statuses</h2>
+      <p>
+        <strong>Detected</strong> — the signal was found in the file.
+      </p>
+      <p>
+        <strong>Not detected</strong> — we inspected the places that signal lives and it was not
+        there. We only use this where absence is genuinely establishable.
+      </p>
+      <p>
+        <strong>Unable to verify</strong> — we have no way to look. SynthID reads this on every
+        image, permanently, because detecting it requires Google's own detector. This is not a
+        weaker form of "not detected"; it is a statement about our instruments rather than about
+        your file, and it never appears in a removed list.
+      </p>
+
+      <h2>Known limitations</h2>
+      <ul>
+        <li>
+          C2PA manifests are detected and partially read, but signatures are <em>not</em> verified
+          against a trust list. We never report a manifest as valid or invalid.
+        </li>
+        <li>
+          Durable Content Credentials can be re-associated with an image by a provider after the
+          manifest is removed, using an invisible watermark or content fingerprint. Removing a
+          manifest cleans your copy of the file, not anyone else's records.
+        </li>
+        <li>Pixel-embedded watermarks such as SynthID are neither detectable nor removable here.</li>
+        <li>Statistical text watermarks are not detectable client-side by anyone, including us.</li>
+        <li>Supported formats are JPG, PNG and WebP. AVIF, HEIC, PDF, SVG, audio and video are not supported.</li>
+        <li>
+          Very large files are limited by browser memory rather than by any server constraint, since
+          there is no server.
+        </li>
+      </ul>
+
+      <h2>Verifying our privacy claim yourself</h2>
+      <p>
+        Load any tool page, disconnect from the internet, then scan and clean a file. Everything
+        works, because processing was always local. Alternatively, open your browser's network panel
+        and watch while you use the tool: no request carries your file, its contents, its name, or
+        anything derived from them.
+      </p>
+    </div>
+  </div>
+
+  <div class="h-16"></div>
+</BaseLayout>

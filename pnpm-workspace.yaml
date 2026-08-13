@@ -1,0 +1,6 @@
+# esbuild ships prebuilt binaries and needs its install script to link one.
+# It is a direct build dependency of Vite/Astro, so this is expected.
+allowBuilds:
+  esbuild: true
+minimumReleaseAgeExclude:
+  - astro@7.2.2

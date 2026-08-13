@@ -1,0 +1,129 @@
+---
+/**
+ * Tool pages.
+ *
+ * One scanner implementation, many pages — the scanner is never forked
+ * (PRD §51 phase 4). Each page supplies its own explanatory content from
+ * src/lib/site.ts.
+ */
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Faq from '../components/Faq.astro';
+import RelatedLinks from '../components/RelatedLinks.astro';
+import ImageScanner from '../components/react/ImageScanner';
+import TextScanner from '../components/react/TextScanner';
+import { SITE, TOOLS, toolBySlug } from '../lib/site';
+
+export async function getStaticPaths() {
+  return TOOLS.map((tool) => ({
+    // Slugs are stored with a leading slash; the route param must not have one.
+    params: { tool: tool.slug.replace(/^\//, '') },
+    props: { slug: tool.slug },
+  }));
+}
+
+const { slug } = Astro.props;
+const tool = toolBySlug(slug)!;
+
+const guides = await getCollection('guides');
+const guideByPath = new Map(guides.map((g) => [`/guides/${g.id}`, g]));
+
+const relatedTools = tool.relatedTools
+  .map((s) => toolBySlug(s))
+  .filter((t) => t !== undefined)
+  .map((t) => ({ href: t.slug, label: t.cardTitle, blurb: t.cardBlurb }));
+
+const relatedGuides = tool.relatedGuides
+  .map((path) => guideByPath.get(path))
+  .filter((g) => g !== undefined)
+  .map((g) => ({ href: `/guides/${g.id}`, label: g.data.title, blurb: g.data.summary }));
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.h1,
+    url: new URL(tool.slug, SITE.url).href,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    description: tool.description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url },
+      { '@type': 'ListItem', position: 2, name: 'Tools', item: new URL('/tools', SITE.url).href },
+      { '@type': 'ListItem', position: 3, name: tool.h1, item: new URL(tool.slug, SITE.url).href },
+    ],
+  },
+];
+
+if (tool.faq.length > 0) {
+  schema.push({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: tool.faq.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  } as never);
+}
+---
+
+<BaseLayout
+  title={tool.title}
+  description={tool.description}
+  canonicalPath={tool.slug}
+  schema={schema}
+>
+  <div class="nw-shell-narrow pt-8">
+    <Breadcrumbs trail={[{ href: '/tools', label: 'Tools' }, { href: tool.slug, label: tool.h1 }]} />
+  </div>
+
+  <section class="nw-shell-narrow pt-6 pb-4">
+    <div>
+      <h1 class="text-3xl font-bold">{tool.h1}</h1>
+      <p class="mt-3 text-lg nw-muted">{tool.intro}</p>
+    </div>
+
+    <div class="mt-8">
+      {
+        tool.tool === 'image' ? (
+          <ImageScanner client:load focus={tool.focus} />
+        ) : (
+          <TextScanner client:load />
+        )
+      }
+    </div>
+  </section>
+
+  <AdSlot position="after-tool" />
+
+  <section class="nw-shell-narrow mt-14">
+    <div class="nw-content">
+      {
+        tool.sections.map((section) => (
+          <>
+            <h2>{section.heading}</h2>
+            {section.body.map((paragraph) => (
+              <p>{paragraph}</p>
+            ))}
+          </>
+        ))
+      }
+    </div>
+
+    <div>
+      <Faq items={tool.faq} />
+      <RelatedLinks tools={relatedTools} guides={relatedGuides} />
+    </div>
+  </section>
+
+  <div class="h-10"></div>
+</BaseLayout>

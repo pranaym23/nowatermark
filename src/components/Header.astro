@@ -1,0 +1,60 @@
+---
+import { NAV_TOOLS, SITE } from '../lib/site';
+
+const current = Astro.url.pathname.replace(/\/$/, '');
+---
+
+<header
+  class="sticky top-0 z-40 border-b backdrop-blur"
+  style="border-color: var(--nw-border); background-color: color-mix(in oklab, var(--nw-bg) 88%, transparent);"
+>
+  <div class="nw-shell flex h-14 items-center justify-between gap-4">
+    <a href="/" class="flex items-baseline gap-2 font-semibold tracking-tight">
+      <span>{SITE.name}</span>
+      <span class="hidden text-xs font-normal nw-muted sm:inline">{SITE.descriptor}</span>
+    </a>
+
+    <nav aria-label="Main" class="flex items-center gap-1 text-sm">
+      <details class="relative">
+        <summary
+          class="cursor-pointer list-none rounded-lg px-3 py-1.5 hover:bg-[var(--nw-surface-muted)]"
+          >Tools</summary
+        >
+        <ul
+          class="nw-card absolute end-0 mt-1 w-64 overflow-hidden p-1 shadow-lg"
+          style="background-color: var(--nw-surface);"
+        >
+          {
+            NAV_TOOLS.map((tool) => (
+              <li>
+                <a
+                  href={tool.slug}
+                  class="block rounded-md px-3 py-2 text-sm hover:bg-[var(--nw-surface-muted)]"
+                  aria-current={current === tool.slug ? 'page' : undefined}
+                >
+                  {tool.navLabel}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+
+      <a
+        href="/guides"
+        class="rounded-lg px-3 py-1.5 hover:bg-[var(--nw-surface-muted)]"
+        aria-current={current.startsWith('/guides') ? 'page' : undefined}>Guides</a
+      >
+      <a
+        href="/methodology"
+        class="hidden rounded-lg px-3 py-1.5 hover:bg-[var(--nw-surface-muted)] sm:block"
+        aria-current={current === '/methodology' ? 'page' : undefined}>Methodology</a
+      >
+      <a
+        href="/"
+        class="ms-1 rounded-lg px-3 py-1.5 text-sm font-medium"
+        style="background-color: var(--nw-accent); color: var(--nw-accent-contrast);">Check a file</a
+      >
+    </nav>
+  </div>
+</header>

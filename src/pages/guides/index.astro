@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+
+const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+
+const title = 'Guides — AI Watermarks, Provenance and Metadata | NoWatermark';
+const description =
+  'Plain explanations of SynthID, C2PA, Content Credentials, EXIF and AI image metadata — including what can and cannot be removed.';
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/guides">
+  <div class="nw-shell pt-8">
+    <Breadcrumbs trail={[{ href: '/guides', label: 'Guides' }]} />
+
+    <header class="nw-prose mt-6">
+      <h1 class="text-3xl font-bold">Guides</h1>
+      <p class="mt-3 text-lg nw-muted">
+        How AI provenance actually works — what each technology does, where it is stored, and what
+        that means for what you can remove.
+      </p>
+    </header>
+
+    <div class="mt-10 grid gap-4 sm:grid-cols-2">
+      {
+        guides.map((guide) => (
+          <a href={`/guides/${guide.id}`} class="nw-card group p-5">
+            <h2 class="font-semibold group-hover:underline">{guide.data.title}</h2>
+            <p class="mt-1.5 text-sm nw-muted">{guide.data.summary}</p>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="h-16"></div>
+</BaseLayout>

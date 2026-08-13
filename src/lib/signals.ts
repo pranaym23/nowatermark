@@ -1,0 +1,251 @@
+/**
+ * The capability matrix (PRD §45) and the canonical signal vocabulary.
+ *
+ * This is the single place that decides what NoWatermark claims it can do.
+ * Scanners, cleaners, the UI and the /methodology page all read from here, so
+ * a product claim can never drift from the implementation. Never hard-code a
+ * removal claim in a component.
+ */
+
+export type SignalCategory = 'provenance' | 'metadata' | 'privacy' | 'hidden';
+
+export interface SignalSpec {
+  id: string;
+  label: string;
+  category: SignalCategory;
+  /** One-line description shown next to the result. */
+  description: string;
+  /** Expanded explanation for the disclosure panel (PRD §16). */
+  detail: string;
+  /** Can we find it? */
+  detect: boolean;
+  /** Can we remove it? */
+  remove: boolean;
+  /** Can we confirm afterwards that it is gone? */
+  verify: boolean;
+}
+
+function spec(s: SignalSpec): SignalSpec {
+  return s;
+}
+
+export const SIGNALS = {
+  c2pa: spec({
+    id: 'c2pa',
+    label: 'C2PA / Content Credentials',
+    category: 'provenance',
+    description: 'A signed record of where a file came from and how it was edited.',
+    detail:
+      'C2PA is an open provenance standard. A manifest embedded in the file can record the tool that produced it, the edits applied, and who signed the record. NoWatermark detects and reads the manifest locally, but does not verify its cryptographic signature, so it reports the manifest as present rather than valid. Removing the manifest deletes it from this file. Some services can still re-associate provenance using an invisible watermark or a content fingerprint held in their own database — NoWatermark cannot detect or affect that.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  aiGenerator: spec({
+    id: 'ai-generator',
+    label: 'AI generator metadata',
+    category: 'provenance',
+    description: 'Tags naming the AI tool or model that produced the image.',
+    detail:
+      'Generators frequently record themselves in ordinary metadata: an XMP DigitalSourceType of trainedAlgorithmicMedia, a Software or CreatorTool value naming the product, or PNG text chunks holding the prompt and settings. These are plain metadata fields, so they can be removed completely and the removal can be verified.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  synthid: spec({
+    id: 'synthid',
+    label: 'SynthID',
+    category: 'provenance',
+    description: "Google's imperceptible watermark, embedded in the pixels themselves.",
+    detail:
+      'SynthID embeds a signal directly into image content rather than into metadata, and detecting it requires Google\'s own detector. NoWatermark cannot detect it, cannot remove it, and — importantly — cannot tell you that it is absent. Any image from a Google AI product should be assumed to carry it regardless of what metadata cleaning reports.',
+    detect: false,
+    remove: false,
+    verify: false,
+  }),
+  exif: spec({
+    id: 'exif',
+    label: 'EXIF',
+    category: 'metadata',
+    description: 'Camera, device, timestamp and settings data.',
+    detail:
+      'EXIF is the metadata block cameras and phones write into photographs. It commonly holds the device make and model, timestamps, exposure settings, lens information and — when location services were enabled — GPS coordinates. It is fully removable, with one deliberate exception: the Orientation tag, which tells viewers how to rotate the image.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  xmp: spec({
+    id: 'xmp',
+    label: 'XMP',
+    category: 'metadata',
+    description: "Adobe's XML metadata block, used by editors and AI tools.",
+    detail:
+      'XMP is an XML packet embedded in the file. Editing software uses it for edit history and rights information; AI tools increasingly use it to declare that content is synthetic. It can span several segments in a JPEG, all of which NoWatermark locates and removes.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  iptc: spec({
+    id: 'iptc',
+    label: 'IPTC',
+    category: 'metadata',
+    description: 'Captions, keywords and rights information used by publishers.',
+    detail:
+      'IPTC data is stored in a Photoshop resource block and is used across the publishing industry for captions, credits, keywords and usage terms. It is fully removable.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  embeddedText: spec({
+    id: 'embedded-text',
+    label: 'Embedded text records',
+    category: 'metadata',
+    description: 'PNG text chunks and JPEG comments, often holding prompts.',
+    detail:
+      'PNG files can carry arbitrary text records, and image generators use them heavily — Stable Diffusion writes the full prompt and sampler settings into a "parameters" chunk, and ComfyUI stores an entire workflow graph. JPEG comment segments are the equivalent. All of it is removable.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  gps: spec({
+    id: 'gps',
+    label: 'GPS location',
+    category: 'privacy',
+    description: 'Coordinates recorded when the photo was taken.',
+    detail:
+      'GPS coordinates in EXIF can identify a home, workplace or route with high precision. They are removed along with the rest of the EXIF block.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  timestamp: spec({
+    id: 'timestamp',
+    label: 'Timestamps',
+    category: 'privacy',
+    description: 'When the file was created or last modified.',
+    detail:
+      'Creation and modification timestamps can reveal working patterns and can link a file to other files made at the same moment. Removed with the metadata blocks that carry them.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  device: spec({
+    id: 'device',
+    label: 'Device',
+    category: 'privacy',
+    description: 'Camera or phone make and model.',
+    detail:
+      'Device identifiers narrow down who produced a file, and maker-note blocks can include serial numbers. Removed with EXIF.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  software: spec({
+    id: 'software',
+    label: 'Software',
+    category: 'privacy',
+    description: 'The application that created or last edited the file.',
+    detail:
+      'The Software and CreatorTool fields name the editing or generation tool. This is often the clearest indication that an image came from an AI product. Removed with EXIF and XMP.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  author: spec({
+    id: 'author',
+    label: 'Author and rights',
+    category: 'privacy',
+    description: 'Creator name, copyright and ownership fields.',
+    detail:
+      'Artist, copyright, creator and rights fields identify a person or organisation. Note that stripping attribution from work you do not own may be unlawful — see our terms.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  hiddenUnicode: spec({
+    id: 'hidden-unicode',
+    label: 'Hidden Unicode characters',
+    category: 'hidden',
+    description: 'Invisible characters that can carry a payload inside text.',
+    detail:
+      'Zero-width spaces, bidirectional controls and Unicode tag characters render as nothing but survive copy and paste. They are used both for benign formatting and for hiding information inside otherwise ordinary text. NoWatermark finds and removes them, while preserving the zero-width joiners and variation selectors that emoji legitimately need.',
+    detect: true,
+    remove: true,
+    verify: true,
+  }),
+  claudeWatermark: spec({
+    id: 'claude-watermark',
+    label: 'Statistical text watermarks',
+    category: 'hidden',
+    description: 'Watermarks encoded in word choice rather than in characters.',
+    detail:
+      'A statistical text watermark biases a model\'s word selection in a pattern a detector can recognise later. It leaves no special characters behind, so removing invisible Unicode does nothing to it, and no client-side tool can confirm whether one is present. NoWatermark does not claim to detect or remove it.',
+    detect: false,
+    remove: false,
+    verify: false,
+  }),
+  icc: spec({
+    id: 'icc',
+    label: 'Colour profile (ICC)',
+    category: 'metadata',
+    description: 'Colour interpretation data — preserved on purpose.',
+    detail:
+      'An ICC profile tells displays how to interpret the colours in the file. It contains no personal or provenance information, and removing it visibly shifts colours, so NoWatermark deliberately keeps it.',
+    detect: true,
+    remove: false,
+    verify: true,
+  }),
+} as const satisfies Record<string, SignalSpec>;
+
+export type SignalId = (typeof SIGNALS)[keyof typeof SIGNALS]['id'];
+
+export const SIGNAL_LIST: readonly SignalSpec[] = Object.values(SIGNALS);
+
+export function signalById(id: string): SignalSpec | undefined {
+  return SIGNAL_LIST.find((s) => s.id === id);
+}
+
+/** Signals we can genuinely remove — the basis for every removal claim. */
+export const REMOVABLE_SIGNAL_IDS: readonly string[] = SIGNAL_LIST.filter((s) => s.remove).map(
+  (s) => s.id,
+);
+
+/** Rows for the public capability matrix on /methodology. */
+export interface CapabilityRow {
+  label: string;
+  detect: boolean | 'target';
+  remove: boolean | 'target';
+  verify: boolean | 'target';
+  note?: string;
+}
+
+export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
+  { label: 'EXIF', detect: true, remove: true, verify: true },
+  { label: 'XMP', detect: true, remove: true, verify: true },
+  { label: 'IPTC', detect: true, remove: true, verify: true },
+  { label: 'GPS', detect: true, remove: true, verify: true },
+  { label: 'PNG text chunks', detect: true, remove: true, verify: true },
+  {
+    label: 'C2PA / Content Credentials',
+    detect: true,
+    remove: true,
+    verify: true,
+    note: 'Presence only — signatures are not cryptographically verified, and cloud-side recovery is out of scope.',
+  },
+  { label: 'AI generator metadata', detect: true, remove: true, verify: true },
+  { label: 'Hidden Unicode', detect: true, remove: true, verify: true },
+  {
+    label: 'SynthID',
+    detect: false,
+    remove: false,
+    verify: false,
+    note: 'Embedded in pixels. We cannot confirm presence or absence.',
+  },
+  {
+    label: 'Statistical text watermarks',
+    detect: false,
+    remove: false,
+    verify: false,
+    note: 'Encoded in word choice. Not detectable client-side.',
+  },
+];

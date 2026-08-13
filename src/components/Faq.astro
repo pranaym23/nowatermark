@@ -1,0 +1,31 @@
+---
+import type { FaqItem } from '../lib/site';
+
+interface Props {
+  items: FaqItem[];
+  heading?: string;
+}
+
+const { items, heading = 'Frequently asked questions' } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <section class="mt-14">
+      <h2 class="text-xl font-semibold">{heading}</h2>
+      <div class="mt-4 nw-card divide-y" style="border-color: var(--nw-border);">
+        {items.map((item) => (
+          <details class="group">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-medium hover:bg-[var(--nw-surface-muted)]">
+              {item.q}
+              <span class="shrink-0 text-xs transition-transform group-open:rotate-45" aria-hidden="true">
+                +
+              </span>
+            </summary>
+            <p class="px-4 pb-4 text-sm nw-muted">{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}

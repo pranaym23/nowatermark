@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE } from '../lib/site';
+
+const title = 'About NoWatermark | NoWatermark';
+const description =
+  'Why NoWatermark exists: provider-neutral, honest tools for understanding AI provenance and metadata, that run entirely in your browser.';
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/about">
+  <div class="nw-shell-narrow pt-8">
+    <Breadcrumbs trail={[{ href: '/about', label: 'About' }]} />
+
+    <header class="mt-6">
+      <h1 class="text-3xl font-bold">About</h1>
+      <p class="mt-3 text-lg nw-muted">{SITE.descriptor}.</p>
+    </header>
+
+    <div class="nw-content mt-10">
+      <h2>Why this exists</h2>
+      <p>
+        Search for "AI watermark remover" and you will find a lot of tools promising things nobody
+        can deliver — guaranteed SynthID removal, content that is "100% undetectable", detectors for
+        watermarks that cannot be detected client-side. Most of them upload your file to a server on
+        the way.
+      </p>
+      <p>
+        NoWatermark is the opposite proposition. It does a smaller set of things, does them
+        properly, and is explicit about where the boundary is.
+      </p>
+
+      <h2>Two rules</h2>
+      <p>
+        <strong>Never claim a watermark has been removed unless we can verify it.</strong> Our
+        cleaners scan their own output and report the difference between two independent scans. A
+        signal is marked removed because a fresh scan cannot find it — never because a cleaner said
+        so. Signals we cannot measure are marked "Unable to verify" and never appear in a removed
+        list.
+      </p>
+      <p>
+        <strong>Your file never leaves your device.</strong> There is no upload endpoint, no
+        database, no storage. Load a page, disconnect from the internet, and the tools still work.
+      </p>
+
+      <h2>Provider-neutral</h2>
+      <p>
+        We cover OpenAI, Google, Anthropic, Adobe and the open standards equally, and we have no
+        stake in which of them you use. Where a provider does something well, we say so; where a
+        technology defeats us, we say that too.
+      </p>
+
+      <h2>How it is built</h2>
+      <p>
+        A static site with no backend. The scanners and cleaners are hand-written container parsers
+        for JPEG, PNG and WebP, running in a Web Worker on your device. Cleaning is lossless by
+        construction: compressed image data is copied byte-for-byte and never re-encoded.
+      </p>
+      <p>
+        The <a href="/methodology">methodology page</a> sets out the full capability matrix, including
+        everything we cannot do.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Corrections are genuinely welcome — particularly if you think we have described a technology
+        inaccurately. <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.
+      </p>
+    </div>
+  </div>
+
+  <div class="h-16"></div>
+</BaseLayout>

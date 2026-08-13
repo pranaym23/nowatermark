@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.astro/
+.screenshots/
+tests/fixtures/samples/
+
+# Environment — the core application requires no secrets at all.
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.vscode/
+.idea/

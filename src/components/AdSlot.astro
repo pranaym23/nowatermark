@@ -1,0 +1,34 @@
+---
+/**
+ * Advertising placeholder (PRD §34).
+ *
+ * Renders nothing until advertising is configured, so no page depends on an ad
+ * network being present, approved, or unblocked. Never place one of these
+ * adjacent to a Download button or styled to resemble a product control.
+ */
+interface Props {
+  position: 'after-tool' | 'article-middle' | 'article-end';
+}
+
+const { position } = Astro.props;
+
+// Flipped on only once advertising is actually configured and reviewed.
+const ADS_ENABLED = false;
+---
+
+{
+  ADS_ENABLED && (
+    <aside
+      class="nw-shell my-10"
+      data-ad-position={position}
+      aria-label="Advertisement"
+    >
+      <div
+        class="rounded-[var(--radius-card)] border border-dashed p-6 text-center text-xs nw-muted"
+        style="border-color: var(--nw-border);"
+      >
+        Advertisement
+      </div>
+    </aside>
+  )
+}
