@@ -1,0 +1,840 @@
+<title>NoWatermark Design Directions</title>
+<style>
+  /* ============================================================
+     PAGE FRAME -- deliberately quiet. The three directions are the
+     content; the presentation around them stays out of the way.
+     Neutrals carry a slight blue bias toward the frame accent.
+     ============================================================ */
+  :root {
+    --f-bg: #fbfbfd;
+    --f-surface: #ffffff;
+    --f-sunken: #f2f3f7;
+    --f-line: #e3e5ec;
+    --f-line-soft: #eef0f5;
+    --f-text: #14161d;
+    --f-muted: #5f6577;
+    --f-faint: #8b91a3;
+    --f-accent: #3d3fb0;
+    --f-accent-soft: #ececfb;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --f-bg: #0e1015;
+      --f-surface: #161922;
+      --f-sunken: #1c202a;
+      --f-line: #2a2f3c;
+      --f-line-soft: #232733;
+      --f-text: #eceef4;
+      --f-muted: #a2a9bb;
+      --f-faint: #757c90;
+      --f-accent: #9a9cf5;
+      --f-accent-soft: #232544;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --f-bg: #0e1015;
+    --f-surface: #161922;
+    --f-sunken: #1c202a;
+    --f-line: #2a2f3c;
+    --f-line-soft: #232733;
+    --f-text: #eceef4;
+    --f-muted: #a2a9bb;
+    --f-faint: #757c90;
+    --f-accent: #9a9cf5;
+    --f-accent-soft: #232544;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--f-bg);
+    color: var(--f-text);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+
+  :focus-visible { outline: 2px solid var(--f-accent); outline-offset: 3px; border-radius: 3px; }
+
+  .wrap { max-width: 1180px; margin-inline: auto; padding: 0 24px; }
+
+  h1, h2, h3, h4 { margin: 0; text-wrap: balance; letter-spacing: -0.021em; }
+  p { margin: 0; text-wrap: pretty; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--f-faint);
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead { padding: 72px 0 44px; border-bottom: 1px solid var(--f-line); }
+  .masthead h1 { font-size: clamp(30px, 4.4vw, 46px); font-weight: 620; line-height: 1.08; }
+  .masthead .lede {
+    margin-top: 18px; max-width: 62ch; font-size: 17px; color: var(--f-muted);
+  }
+  .brieflist {
+    margin-top: 30px; display: grid; gap: 14px 30px;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+  .brief dt { font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--f-faint); font-family: var(--mono); }
+  .brief dd { margin: 5px 0 0; font-size: 14px; color: var(--f-text); }
+
+  /* ---------- direction block ---------- */
+  .direction { padding: 64px 0; border-bottom: 1px solid var(--f-line); }
+  .dir-head { display: grid; gap: 26px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) { .dir-head { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 48px; } }
+
+  .dir-name {
+    font-size: clamp(24px, 3vw, 32px); font-weight: 620; line-height: 1.1;
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  }
+  .swatchrow { display: flex; gap: 6px; align-items: center; }
+  .swatch { width: 17px; height: 17px; border-radius: 4px; border: 1px solid rgba(128,128,128,.28); }
+
+  .thesis { margin-top: 14px; font-size: 16px; color: var(--f-muted); max-width: 56ch; }
+
+  .specs { display: grid; gap: 12px; align-content: start; }
+  .spec { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; font-size: 13.5px; align-items: baseline; }
+  .spec dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--f-faint); }
+  .spec dd { margin: 0; color: var(--f-muted); }
+  .spec dd b { color: var(--f-text); font-weight: 560; }
+
+  /* ---------- mockup grid ---------- */
+  .screens { margin-top: 38px; display: grid; gap: 22px; }
+  @media (min-width: 860px) { .screens { grid-template-columns: 1fr 1fr; gap: 26px; } }
+
+  .screen { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+  .screen-label {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--f-faint);
+  }
+
+  /* Browser chrome wrapper. The mockup inside paints its own ground so the
+     direction reads accurately regardless of the viewer's theme. */
+  .frame {
+    border: 1px solid var(--f-line); border-radius: 11px; overflow: hidden;
+    background: var(--f-surface); box-shadow: 0 1px 2px rgba(20,22,29,.05), 0 8px 24px -12px rgba(20,22,29,.14);
+  }
+  .chrome {
+    display: flex; align-items: center; gap: 8px; padding: 8px 11px;
+    background: var(--f-sunken); border-bottom: 1px solid var(--f-line);
+  }
+  .dots { display: flex; gap: 5px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--f-line); display: block; }
+  .urlbar {
+    flex: 1; font-family: var(--mono); font-size: 10px; color: var(--f-faint);
+    background: var(--f-surface); border: 1px solid var(--f-line);
+    border-radius: 5px; padding: 3px 8px; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ============================================================
+     MOCKUPS -- every colour below is scoped and explicit so a
+     direction never inherits the page theme.
+     ============================================================ */
+  .mock {
+    background: var(--m-bg); color: var(--m-text);
+    font-family: var(--m-body); padding: var(--m-pad);
+    display: flex; flex-direction: column; gap: var(--m-gap);
+    min-height: 318px;
+  }
+  .mock * { box-sizing: border-box; }
+
+  .m-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; padding-bottom: var(--m-navpad); border-bottom: 1px solid var(--m-line);
+  }
+  .m-logo { font-family: var(--m-display); font-weight: var(--m-logo-weight); font-size: 13px; letter-spacing: var(--m-logo-track); }
+  .m-navlinks { display: flex; gap: 11px; font-size: 9.5px; color: var(--m-muted); }
+  .m-cta {
+    font-size: 9.5px; padding: 4px 9px; border-radius: var(--m-radius-sm);
+    background: var(--m-accent); color: var(--m-on-accent); font-weight: 560;
+  }
+
+  .m-h1 { font-family: var(--m-display); font-size: var(--m-h1-size); font-weight: var(--m-h1-weight); line-height: 1.1; letter-spacing: var(--m-h1-track); }
+  .m-sub { font-size: 11px; color: var(--m-muted); max-width: 40ch; line-height: 1.5; }
+
+  .m-drop {
+    border: var(--m-drop-border); border-radius: var(--m-radius);
+    padding: var(--m-drop-pad); text-align: var(--m-drop-align);
+    background: var(--m-drop-bg); display: flex; flex-direction: column;
+    gap: 7px; align-items: var(--m-drop-items);
+  }
+  .m-drop-title { font-size: 12.5px; font-weight: 580; font-family: var(--m-display); }
+  .m-drop-hint { font-size: 9.5px; color: var(--m-muted); }
+  .m-btn {
+    font-size: 10px; font-weight: 560; padding: 6px 13px;
+    border-radius: var(--m-radius-sm); background: var(--m-accent); color: var(--m-on-accent);
+  }
+  .m-privacy { font-size: 9.5px; color: var(--m-muted); display: flex; align-items: center; gap: 5px; }
+
+  /* results */
+  .m-file {
+    display: flex; align-items: center; gap: 8px; padding: 7px 9px;
+    border: 1px solid var(--m-line); border-radius: var(--m-radius-sm); background: var(--m-surface);
+  }
+  .m-thumb { width: 24px; height: 24px; border-radius: 3px; background: linear-gradient(135deg, #6d8fc4, #c47ba8); flex: none; }
+  .m-fname { font-size: 10px; font-weight: 560; }
+  .m-fmeta { font-size: 8.5px; color: var(--m-muted); font-family: var(--m-data); }
+
+  .m-resulthead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .m-count { font-family: var(--m-display); font-size: var(--m-count-size); font-weight: var(--m-h1-weight); letter-spacing: var(--m-h1-track); }
+  .m-countnote { font-size: 8.5px; color: var(--m-muted); font-family: var(--m-data); }
+
+  .m-rows { border: var(--m-rows-border); border-radius: var(--m-radius-sm); overflow: hidden; background: var(--m-surface); }
+  .m-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: var(--m-row-pad); border-bottom: 1px solid var(--m-line);
+  }
+  .m-row:last-child { border-bottom: 0; }
+  .m-rowname { font-size: 10px; min-width: 0; }
+  .m-rowval { font-size: 8.5px; color: var(--m-muted); font-family: var(--m-data); }
+  .m-pill {
+    font-size: 8.5px; font-weight: 560; padding: 2px 7px; border-radius: 20px;
+    white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .p-found { background: var(--m-warn-bg); color: var(--m-warn); }
+  .p-clear { background: var(--m-ok-bg); color: var(--m-ok); }
+  .p-unknown { background: var(--m-unk-bg); color: var(--m-unk); }
+
+  /* ---------------- Direction: Instrument ---------------- */
+  .instrument {
+    --m-bg: #0a0d12; --m-surface: #10141b; --m-text: #dfe5ee; --m-muted: #79839a;
+    --m-line: #1e242f; --m-accent: #4fc4d6; --m-on-accent: #06222a;
+    --m-ok: #63c48d; --m-ok-bg: #10281c; --m-warn: #d9a441; --m-warn-bg: #2a2113;
+    --m-unk: #8791a6; --m-unk-bg: #191e28;
+    --m-display: var(--mono); --m-body: var(--sans); --m-data: var(--mono);
+    --m-pad: 15px; --m-gap: 13px; --m-navpad: 10px;
+    --m-radius: 3px; --m-radius-sm: 3px;
+    --m-h1-size: 19px; --m-h1-weight: 600; --m-h1-track: -0.02em;
+    --m-logo-weight: 600; --m-logo-track: -0.03em;
+    --m-drop-border: 1px dashed #2b3442; --m-drop-bg: #0d1118; --m-drop-pad: 17px 13px;
+    --m-drop-align: left; --m-drop-items: flex-start;
+    --m-rows-border: 1px solid var(--m-line); --m-row-pad: 7px 9px;
+    --m-count-size: 15px;
+  }
+  /* A calibration scale under the headline -- the instrument's own vernacular. */
+  .instrument .m-scale { display: flex; align-items: flex-end; gap: 3px; height: 13px; }
+  .instrument .m-scale i { width: 1px; background: #2b3442; display: block; height: 5px; }
+  .instrument .m-scale i:nth-child(5n + 1) { height: 12px; background: #3d4a5c; }
+  .instrument .m-offset { font-family: var(--mono); font-size: 8px; color: #4a5568; letter-spacing: .04em; }
+  .instrument .m-row { font-variant-numeric: tabular-nums; }
+  .instrument .m-rowname { font-family: var(--mono); font-size: 9.5px; }
+
+  /* ---------------- Direction: Dossier ---------------- */
+  .dossier {
+    --m-bg: #fcfcfa; --m-surface: #ffffff; --m-text: #15171c; --m-muted: #63687a;
+    --m-line: #e0e0da; --m-accent: #23407e; --m-on-accent: #ffffff;
+    --m-ok: #2c6b4a; --m-ok-bg: #e8f2ec; --m-warn: #8a4a1d; --m-warn-bg: #f6ece2;
+    --m-unk: #5c6070; --m-unk-bg: #eeeeea;
+    --m-display: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --m-body: var(--sans); --m-data: var(--sans);
+    --m-pad: 17px; --m-gap: 14px; --m-navpad: 9px;
+    --m-radius: 2px; --m-radius-sm: 2px;
+    --m-h1-size: 25px; --m-h1-weight: 400; --m-h1-track: -0.018em;
+    --m-logo-weight: 400; --m-logo-track: 0;
+    --m-drop-border: 1px solid #d6d6ce; --m-drop-bg: #f6f6f2; --m-drop-pad: 20px 15px;
+    --m-drop-align: left; --m-drop-items: flex-start;
+    --m-rows-border: 0; --m-row-pad: 9px 0;
+    --m-count-size: 18px;
+  }
+  .dossier .m-logo { font-style: normal; }
+  .dossier .m-rule { height: 3px; border-top: 1px solid var(--m-line); border-bottom: 1px solid var(--m-line); }
+  .dossier .m-kicker {
+    font-size: 9px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--m-accent); font-weight: 620;
+  }
+  .dossier .m-rows { border-top: 1px solid var(--m-line); border-radius: 0; }
+  .dossier .m-row { border-bottom: 1px solid var(--m-line); }
+  .dossier .m-rowname { font-family: var(--m-display); font-size: 11.5px; }
+  .dossier .m-pill { border-radius: 2px; padding: 2px 6px; letter-spacing: .04em; text-transform: uppercase; font-size: 8px; }
+
+  /* ---------------- Direction: Plainspoken ---------------- */
+  .plain {
+    --m-bg: #f4f6f9; --m-surface: #ffffff; --m-text: #1a1f2b; --m-muted: #667085;
+    --m-line: #e6eaf1; --m-accent: #4f46d6; --m-on-accent: #ffffff;
+    --m-ok: #0d7a52; --m-ok-bg: #dff3ea; --m-warn: #9a6205; --m-warn-bg: #fdf0d8;
+    --m-unk: #667085; --m-unk-bg: #edf0f5;
+    --m-display: var(--sans); --m-body: var(--sans); --m-data: var(--sans);
+    --m-pad: 16px; --m-gap: 14px; --m-navpad: 11px;
+    --m-radius: 14px; --m-radius-sm: 9px;
+    --m-h1-size: 21px; --m-h1-weight: 680; --m-h1-track: -0.028em;
+    --m-logo-weight: 680; --m-logo-track: -0.03em;
+    --m-drop-border: 2px dashed #ccd4e2; --m-drop-bg: #ffffff; --m-drop-pad: 24px 16px;
+    --m-drop-align: center; --m-drop-items: center;
+    --m-rows-border: 1px solid var(--m-line); --m-row-pad: 10px 12px;
+    --m-count-size: 16px;
+  }
+  .plain .m-nav { border-bottom: 0; }
+  .plain .m-btn { border-radius: 999px; padding: 7px 16px; }
+  .plain .m-cta { border-radius: 999px; }
+  .plain .m-verdict {
+    background: var(--m-surface); border: 1px solid var(--m-line); border-radius: var(--m-radius);
+    padding: 13px 14px; display: flex; flex-direction: column; gap: 5px;
+  }
+  .plain .m-verdict-title { font-size: 13px; font-weight: 660; letter-spacing: -0.02em; }
+  .plain .m-verdict-sub { font-size: 10px; color: var(--m-muted); line-height: 1.5; }
+  .plain .m-disclose {
+    font-size: 9.5px; color: var(--m-accent); font-weight: 560;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .plain .m-rows { border-radius: var(--m-radius); }
+
+  /* ---------- notes under each direction ---------- */
+  .notes { margin-top: 30px; display: grid; gap: 20px; }
+  @media (min-width: 780px) { .notes { grid-template-columns: 1fr 1fr; gap: 28px; } }
+  .note h4 { font-size: 12.5px; font-weight: 620; letter-spacing: 0; }
+  .note ul { margin: 9px 0 0; padding-left: 17px; display: grid; gap: 6px; }
+  .note li { font-size: 13.5px; color: var(--f-muted); }
+  .note li b { color: var(--f-text); font-weight: 560; }
+
+  /* ---------- comparison ---------- */
+  .compare { padding: 60px 0; border-bottom: 1px solid var(--f-line); }
+  .tablescroll { overflow-x: auto; margin-top: 24px; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--f-line-soft); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--f-faint); font-weight: 500; border-bottom: 1px solid var(--f-line);
+  }
+  tbody th { font-weight: 560; color: var(--f-text); width: 172px; }
+  td { color: var(--f-muted); }
+
+  /* ---------- recommendation ---------- */
+  .rec { padding: 60px 0 76px; }
+  .rec-card {
+    margin-top: 22px; background: var(--f-surface); border: 1px solid var(--f-line);
+    border-radius: 12px; padding: 26px 26px 28px;
+  }
+  .rec-card h3 { font-size: 18px; font-weight: 620; }
+  .rec-card p { margin-top: 11px; font-size: 14.5px; color: var(--f-muted); max-width: 68ch; }
+  .rec-card p + p { margin-top: 12px; }
+  .rec-tag {
+    display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--f-accent); background: var(--f-accent-soft);
+    padding: 3px 9px; border-radius: 4px; margin-bottom: 4px;
+  }
+  .next { margin-top: 26px; display: grid; gap: 9px; }
+  .next li { font-size: 14px; color: var(--f-muted); }
+  .next b { color: var(--f-text); font-weight: 560; }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">NoWatermark.fyi &middot; visual identity</p>
+    <h1>Three directions for a tool whose product is honesty</h1>
+    <p class="lede">
+      NoWatermark's competitive position is that it tells you what it cannot measure. Every
+      direction below is judged on one thing above all: how convincingly it handles the
+      <em>Unable to verify</em> row &#x2014; the moment the product admits a limit. That row appears in
+      all six screens.
+    </p>
+
+    <dl class="brieflist">
+      <div class="brief">
+        <dt>Brand basis</dt>
+        <dd>Independent &#x2014; no Kolab tokens or geometry</dd>
+      </div>
+      <div class="brief">
+        <dt>Screens per direction</dt>
+        <dd>Homepage and tool page in a results state</dd>
+      </div>
+      <div class="brief">
+        <dt>What differs</dt>
+        <dd>Who each one is built to convert, not just palette</dd>
+      </div>
+      <div class="brief">
+        <dt>Content</dt>
+        <dd>Real strings and real scan output from the build</dd>
+      </div>
+    </dl>
+  </div>
+</header>
+
+<!-- ============================ INSTRUMENT ============================ -->
+<section class="direction">
+  <div class="wrap">
+    <div class="dir-head">
+      <div>
+        <h2 class="dir-name">
+          Instrument
+          <span class="swatchrow" aria-hidden="true">
+            <span class="swatch" style="background:#0a0d12"></span>
+            <span class="swatch" style="background:#10141b"></span>
+            <span class="swatch" style="background:#4fc4d6"></span>
+            <span class="swatch" style="background:#d9a441"></span>
+            <span class="swatch" style="background:#63c48d"></span>
+          </span>
+        </h2>
+        <p class="thesis">
+          The tool as a measuring device. Borrows the vernacular of the thing it inspects &#x2014;
+          byte offsets, segment markers, tabular readouts, a calibration scale. Nothing is
+          summarised away; the density <em>is</em> the credibility signal.
+        </p>
+      </div>
+
+      <dl class="specs">
+        <div class="spec"><dt>Ground</dt><dd><b>#0A0D12</b> &#x2014; cool near-black, dark-first</dd></div>
+        <div class="spec"><dt>Accent</dt><dd><b>#4FC4D6</b> cyan, kept away from status colours</dd></div>
+        <div class="spec"><dt>Status</dt><dd>Amber found &middot; green clear &middot; slate unmeasurable</dd></div>
+        <div class="spec"><dt>Type</dt><dd>Monospace display and data, sans for prose</dd></div>
+        <div class="spec"><dt>Layout</dt><dd>Dense, left-aligned, hairline rules, tabular figures</dd></div>
+      </dl>
+    </div>
+
+    <div class="screens">
+      <div class="screen">
+        <p class="screen-label">Homepage</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi</span></div>
+          <div class="mock instrument">
+            <div class="m-nav">
+              <span class="m-logo">nowatermark<span style="color:#4fc4d6">.</span>fyi</span>
+              <span class="m-navlinks"><span>tools</span><span>guides</span><span>methodology</span></span>
+            </div>
+            <div>
+              <div class="m-offset">0x00 &mdash; FFD8 SOI</div>
+              <h3 class="m-h1" style="margin-top:5px">What is inside<br>this file?</h3>
+              <div class="m-scale" style="margin-top:9px" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+            <p class="m-sub">
+              Reads every metadata block in a JPEG, PNG or WebP. Reports what it finds, and what
+              it has no instrument for.
+            </p>
+            <div class="m-drop">
+              <span class="m-drop-title">Drop a file</span>
+              <span class="m-drop-hint">JPG &#xB7; PNG &#xB7; WebP &#x2014; parsed locally, never uploaded</span>
+            </div>
+            <p class="m-privacy"><span style="color:#4fc4d6">&#x25A0;</span> 0 bytes transmitted</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <p class="screen-label">Tool page &#x2014; results</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi/exif-remover</span></div>
+          <div class="mock instrument">
+            <div class="m-file">
+              <span class="m-thumb"></span>
+              <span style="min-width:0">
+                <span class="m-fname" style="display:block">IMG_4417.jpg</span>
+                <span class="m-fmeta">JPEG &#xB7; 4032&#xD7;3024 &#xB7; 3.1 MB</span>
+              </span>
+            </div>
+            <div class="m-resulthead">
+              <span class="m-count">12 signals</span>
+              <span class="m-countnote">scan 8ms</span>
+            </div>
+            <div class="m-rows">
+              <div class="m-row">
+                <span class="m-rowname">APP1 &nbsp;EXIF<span class="m-rowval"> &nbsp;14 fields</span></span>
+                <span class="m-pill p-found">FOUND</span>
+              </div>
+              <div class="m-row">
+                <span class="m-rowname">GPS &nbsp;LATLON<span class="m-rowval"> &nbsp;51.507N 0.128W</span></span>
+                <span class="m-pill p-found">FOUND</span>
+              </div>
+              <div class="m-row">
+                <span class="m-rowname">APP11 JUMBF<span class="m-rowval"> &nbsp;c2pa &#xB7; OpenAI</span></span>
+                <span class="m-pill p-found">FOUND</span>
+              </div>
+              <div class="m-row">
+                <span class="m-rowname">APP2 &nbsp;ICC<span class="m-rowval"> &nbsp;kept &#x2014; colour</span></span>
+                <span class="m-pill p-clear">KEPT</span>
+              </div>
+              <div class="m-row" style="background:#0d1118">
+                <span class="m-rowname">SYNTHID<span class="m-rowval"> &nbsp;no instrument</span></span>
+                <span class="m-pill p-unknown">UNMEASURED</span>
+              </div>
+            </div>
+            <span class="m-btn" style="align-self:flex-start">Strip metadata &#x2192;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <h4>What it gets right</h4>
+        <ul>
+          <li><b>Density reads as competence.</b> Showing the actual segment markers proves you parsed the container rather than guessing.</li>
+          <li><b>"Unmeasured" is native here.</b> An instrument that lists its own range is normal; the honest limit looks like rigour rather than a gap.</li>
+          <li><b>Earns technical backlinks</b> &#x2014; the audience most likely to link to you is the one this flatters.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h4>What it costs</h4>
+        <ul>
+          <li><b>Alienates the biggest search segment.</b> Someone Googling "remove location from photo" is not comforted by <code>APP1</code>.</li>
+          <li><b>Dark-first hurts long-form reading</b>, and the guides are the SEO engine.</li>
+          <li><b>Closest to the hacker aesthetic</b> the brand rules exclude &#x2014; needs a careful hand to stay clinical rather than illicit.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ DOSSIER ============================ -->
+<section class="direction">
+  <div class="wrap">
+    <div class="dir-head">
+      <div>
+        <h2 class="dir-name">
+          Dossier
+          <span class="swatchrow" aria-hidden="true">
+            <span class="swatch" style="background:#fcfcfa"></span>
+            <span class="swatch" style="background:#15171c"></span>
+            <span class="swatch" style="background:#23407e"></span>
+            <span class="swatch" style="background:#8a4a1d"></span>
+            <span class="swatch" style="background:#2c6b4a"></span>
+          </span>
+        </h2>
+        <p class="thesis">
+          The tool as an investigative publication. A scan produces a <em>record</em>: serif
+          headings, ruled ledger rows, uppercase status marks. Positions NoWatermark as the
+          reference people cite, with the utility attached &#x2014; which is the stated SEO thesis
+          made visual.
+        </p>
+      </div>
+
+      <dl class="specs">
+        <div class="spec"><dt>Ground</dt><dd><b>#FCFCFA</b> &#x2014; barely warm, not cream</dd></div>
+        <div class="spec"><dt>Accent</dt><dd><b>#23407E</b> ink blue, archival rather than techy</dd></div>
+        <div class="spec"><dt>Status</dt><dd>Rust found &middot; green clear &middot; grey unverifiable</dd></div>
+        <div class="spec"><dt>Type</dt><dd>Georgia display against a sans body &#x2014; real contrast</dd></div>
+        <div class="spec"><dt>Layout</dt><dd>One measured column, rules instead of boxes</dd></div>
+      </dl>
+    </div>
+
+    <div class="screens">
+      <div class="screen">
+        <p class="screen-label">Homepage</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi</span></div>
+          <div class="mock dossier">
+            <div class="m-nav">
+              <span class="m-logo" style="font-size:15px">NoWatermark</span>
+              <span class="m-navlinks"><span>Tools</span><span>Guides</span><span>Methodology</span></span>
+            </div>
+            <div>
+              <p class="m-kicker">Provenance &amp; metadata</p>
+              <h3 class="m-h1" style="margin-top:7px">See what your<br>file reveals.</h3>
+            </div>
+            <div class="m-rule" aria-hidden="true"></div>
+            <p class="m-sub">
+              An independent record of what an image carries: Content Credentials, generator
+              tags, location, authorship. Compiled in your browser, from your copy of the file.
+            </p>
+            <div class="m-drop">
+              <span class="m-drop-title">Submit a file for inspection</span>
+              <span class="m-drop-hint">JPG, PNG or WebP &#xB7; nothing is uploaded</span>
+              <span class="m-btn" style="margin-top:3px">Choose a file</span>
+            </div>
+            <p class="m-privacy">Processed locally &#xB7; no account &#xB7; no storage</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <p class="screen-label">Tool page &#x2014; results</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi/c2pa-checker</span></div>
+          <div class="mock dossier">
+            <div>
+              <p class="m-kicker">Findings</p>
+              <div class="m-resulthead" style="margin-top:5px">
+                <span class="m-count">Twelve signals recorded</span>
+              </div>
+              <p class="m-fmeta" style="margin-top:3px; color:#63687a; font-size:9px">
+                IMG_4417.jpg &#xB7; JPEG &#xB7; 4032&#xD7;3024 &#xB7; verified by re-scan
+              </p>
+            </div>
+            <div class="m-rows">
+              <div class="m-row">
+                <span class="m-rowname">Content Credentials<span class="m-rowval" style="display:block">Claim generator: OpenAI</span></span>
+                <span class="m-pill p-found">Present</span>
+              </div>
+              <div class="m-row">
+                <span class="m-rowname">Location<span class="m-rowval" style="display:block">51.507&#xB0; N, 0.128&#xB0; W</span></span>
+                <span class="m-pill p-found">Present</span>
+              </div>
+              <div class="m-row">
+                <span class="m-rowname">Authorship<span class="m-rowval" style="display:block">Artist, copyright</span></span>
+                <span class="m-pill p-found">Present</span>
+              </div>
+              <div class="m-row">
+                <span class="m-rowname">SynthID<span class="m-rowval" style="display:block">Requires Google's detector</span></span>
+                <span class="m-pill p-unknown">Not established</span>
+              </div>
+            </div>
+            <span class="m-btn" style="align-self:flex-start">Remove what can be removed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <h4>What it gets right</h4>
+        <ul>
+          <li><b>Built for the actual growth engine.</b> Nine long guides are the acquisition strategy; this is the only direction designed for reading them.</li>
+          <li><b>"Not established" is the strongest phrasing of the limit</b> &#x2014; evidentiary language makes the caveat sound authoritative instead of apologetic.</li>
+          <li><b>Distinct in the category.</b> Every competitor in this search space looks like a converter tool; none look like a reference.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h4>What it costs</h4>
+        <ul>
+          <li><b>Risks feeling slow</b> for someone who arrived to strip EXIF in ten seconds and does not want a publication.</li>
+          <li><b>Serif at small sizes needs discipline</b> &#x2014; the ledger rows are where it would degrade first.</li>
+          <li><b>Least obviously "a tool"</b>, which may soften the call to action.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PLAINSPOKEN ============================ -->
+<section class="direction">
+  <div class="wrap">
+    <div class="dir-head">
+      <div>
+        <h2 class="dir-name">
+          Plainspoken
+          <span class="swatchrow" aria-hidden="true">
+            <span class="swatch" style="background:#f4f6f9"></span>
+            <span class="swatch" style="background:#1a1f2b"></span>
+            <span class="swatch" style="background:#4f46d6"></span>
+            <span class="swatch" style="background:#9a6205"></span>
+            <span class="swatch" style="background:#0d7a52"></span>
+          </span>
+        </h2>
+        <p class="thesis">
+          The tool as a reassurance. Leads with a verdict in plain language and puts the
+          technical detail one tap behind it. The only direction that answers the question
+          most visitors actually arrived with &#x2014; <em>is my location in this photo, and is it
+          gone now?</em>
+        </p>
+      </div>
+
+      <dl class="specs">
+        <div class="spec"><dt>Ground</dt><dd><b>#F4F6F9</b> &#x2014; cool paper, white cards floating</dd></div>
+        <div class="spec"><dt>Accent</dt><dd><b>#4F46D6</b> indigo, used only on actions</dd></div>
+        <div class="spec"><dt>Status</dt><dd>Plain words first, colour second</dd></div>
+        <div class="spec"><dt>Type</dt><dd>One sans, worked hard &#x2014; 680 weight against 400</dd></div>
+        <div class="spec"><dt>Layout</dt><dd>Soft radii, roomy targets, verdict above detail</dd></div>
+      </dl>
+    </div>
+
+    <div class="screens">
+      <div class="screen">
+        <p class="screen-label">Homepage</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi</span></div>
+          <div class="mock plain">
+            <div class="m-nav">
+              <span class="m-logo">NoWatermark</span>
+              <span class="m-cta">Check a file</span>
+            </div>
+            <div style="text-align:center">
+              <h3 class="m-h1">What is your photo<br>telling people?</h3>
+              <p class="m-sub" style="margin:7px auto 0">
+                Photos quietly carry your location, your device and the app that made them.
+                See yours, then remove it.
+              </p>
+            </div>
+            <div class="m-drop">
+              <span class="m-drop-title">Drop a photo here</span>
+              <span class="m-drop-hint">or</span>
+              <span class="m-btn">Choose a photo</span>
+            </div>
+            <p class="m-privacy" style="justify-content:center">
+              &#x1F512; Your photo never leaves your device
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <p class="screen-label">Tool page &#x2014; results</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi/exif-remover</span></div>
+          <div class="mock plain">
+            <div class="m-file">
+              <span class="m-thumb"></span>
+              <span style="min-width:0">
+                <span class="m-fname" style="display:block">IMG_4417.jpg</span>
+                <span class="m-fmeta">3.1 MB &#xB7; 4032&#xD7;3024</span>
+              </span>
+            </div>
+
+            <div class="m-verdict">
+              <span class="m-verdict-title">Your photo shows where it was taken.</span>
+              <span class="m-verdict-sub">
+                It also names your phone and the app that edited it. All of this can be removed
+                without changing the picture.
+              </span>
+            </div>
+
+            <div class="m-rows">
+              <div class="m-row">
+                <span class="m-rowname">Where it was taken</span>
+                <span class="m-pill p-found">Found</span>
+              </div>
+              <div class="m-row">
+                <span class="m-rowname">Your phone model</span>
+                <span class="m-pill p-found">Found</span>
+              </div>
+              <div class="m-row">
+                <span class="m-rowname">Google's invisible watermark</span>
+                <span class="m-pill p-unknown">We can't check</span>
+              </div>
+            </div>
+
+            <span class="m-disclose">&#x25B8; Show the technical detail (12 signals)</span>
+            <span class="m-btn" style="align-self:flex-start">Remove this data</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <h4>What it gets right</h4>
+        <ul>
+          <li><b>Matches search intent.</b> Tier-3 keywords &#x2014; "remove metadata from image", "exif remover" &#x2014; are typed by people who want an outcome, not a readout.</li>
+          <li><b>"We can't check" is the most honest phrasing of all three</b> because it is the one a non-expert cannot misread.</li>
+          <li><b>Highest completion rate.</b> A verdict then a button is the shortest path from landing to download.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h4>What it costs</h4>
+        <ul>
+          <li><b>Sacrifices the technical audience</b> who would otherwise link to you, unless the disclosure panel is genuinely deep.</li>
+          <li><b>Softness can read as unserious</b> &#x2014; the one direction where "friendly" risks tipping into the scammy-converter look the brand rules forbid.</li>
+          <li><b>Most generic.</b> Rounded cards and an indigo accent are the current default; it needs sharper detailing to feel authored.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COMPARISON ============================ -->
+<section class="compare">
+  <div class="wrap">
+    <p class="eyebrow">Side by side</p>
+    <h2 style="font-size:26px; font-weight:620; margin-top:9px">Where they actually differ</h2>
+
+    <div class="tablescroll">
+      <table>
+        <thead>
+          <tr><th scope="col">&nbsp;</th><th scope="col">Instrument</th><th scope="col">Dossier</th><th scope="col">Plainspoken</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Built to convert</th>
+            <td>Developers, researchers</td>
+            <td>Readers arriving from guides</td>
+            <td>People with a photo and a worry</td>
+          </tr>
+          <tr>
+            <th scope="row">Keyword tier it serves</th>
+            <td>Tier 2 &#x2014; SynthID, C2PA</td>
+            <td>Tier 1 &#x2014; the explainer queries</td>
+            <td>Tier 3 &#x2014; exif, metadata, remove</td>
+          </tr>
+          <tr>
+            <th scope="row">The unverifiable row</th>
+            <td>"Unmeasured" &#x2014; a range limit</td>
+            <td>"Not established" &#x2014; evidentiary</td>
+            <td>"We can't check" &#x2014; unmissable</td>
+          </tr>
+          <tr>
+            <th scope="row">Results density</th>
+            <td>Everything, always</td>
+            <td>Everything, as a record</td>
+            <td>Three lines, detail on tap</td>
+          </tr>
+          <tr>
+            <th scope="row">Reading long guides</th>
+            <td>Weak &#x2014; dark, dense</td>
+            <td>Strong &#x2014; built for it</td>
+            <td>Adequate</td>
+          </tr>
+          <tr>
+            <th scope="row">Ad tolerance later</th>
+            <td>Poor &#x2014; density leaves no room</td>
+            <td>Good &#x2014; article breaks are natural</td>
+            <td>Good &#x2014; clear sections</td>
+          </tr>
+          <tr>
+            <th scope="row">Main risk</th>
+            <td>Reads as hacker-adjacent</td>
+            <td>Reads as slow</td>
+            <td>Reads as generic</td>
+          </tr>
+          <tr>
+            <th scope="row">Build cost from today</th>
+            <td>Medium &#x2014; new tokens, same structure</td>
+            <td>Medium &#x2014; type system is the work</td>
+            <td>Low &#x2014; closest to what exists</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RECOMMENDATION ============================ -->
+<section class="rec">
+  <div class="wrap">
+    <p class="eyebrow">Recommendation</p>
+    <div class="rec-card">
+      <span class="rec-tag">Dossier, with Plainspoken's verdict</span>
+      <h3>Lead with authority, then answer the question in plain words</h3>
+      <p>
+        The business case for this site is search: nine long guides feeding fourteen tool pages,
+        earning links that compound. Only Dossier is designed for the reading half of that,
+        and it is the only one of the three that does not look like every other utility in the
+        category &#x2014; which matters more for links than for conversion.
+      </p>
+      <p>
+        Its single weakness is the impatient visitor, and that is cheap to fix: put Plainspoken's
+        verdict block at the top of the results, then let the ruled record sit underneath it. You
+        get the plain-language answer for the person who wants it and the full evidence for the
+        person who links to you, without maintaining two designs.
+      </p>
+      <p>
+        Instrument is the one I would not build as the whole site &#x2014; but its readout is worth keeping
+        as the expanded state behind "show technical detail", where its density is an asset rather
+        than a barrier.
+      </p>
+
+      <ul class="next">
+        <li><b>If you pick one</b>, I will build it across the homepage, tool pages, guides and the results UI, then rerun the browser and offline checks.</li>
+        <li><b>If you want the hybrid</b>, I will implement Dossier's frame with the verdict block and Instrument's readout as the disclosure panel.</li>
+        <li><b>If none of these land</b>, tell me which single screen is closest and I will push that one further rather than starting over.</li>
+      </ul>
+    </div>
+  </div>
+</section>
