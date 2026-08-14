@@ -1,5 +1,10 @@
 # Cloudflare Pages headers.
 #
+# NOTE: the Content-Security-Policy is NOT set here. It is generated per-page by
+# Astro (see `security.csp` in astro.config.ts) so that the hashes for Astro's
+# own inline hydration scripts stay correct on every build. Setting a second
+# CSP here would intersect with that one and block the scanner.
+#
 # The CSP is deliberately tight: this site loads no third-party script, makes no
 # XHR/fetch calls, and never connects anywhere at runtime.
 #
@@ -9,7 +14,6 @@
 # change isolated to this file so it is reviewable in one diff (PRD §40).
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; form-action 'none'; base-uri 'self'; object-src 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY

@@ -13,7 +13,50 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'never',
   integrations: [react(), sitemap()],
-  build: { inlineStylesheets: 'auto' },
+  /*
+   * Astro emits small inline module scripts to hydrate islands. A hand-written
+   * `script-src 'self'` in public/_headers blocked them in production and the
+   * scanner never booted — a bug invisible locally, because `astro preview`
+   * does not apply _headers. Letting Astro own the policy means it hashes its
+   * own inline scripts on every build instead of us maintaining hashes by hand.
+   *
+   * style-src needs 'unsafe-inline' because the React components style through
+   * the `style` attribute, which CSP treats as inline.
+   *
+   * frame-ancestors cannot be set from a meta tag, so X-Frame-Options in
+   * public/_headers still covers framing.
+   */
+  security: {
+    csp: {
+      algorithm: 'SHA-256',
+      directives: [
+        "default-src 'self'",
+        "img-src 'self' data: blob:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "worker-src 'self' blob:",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'none'",
+      ],
+      /*
+       * 'unsafe-inline' is ignored by the browser whenever a hash is also
+       * present in the same source list, so putting it in style-src does
+       * nothing and the React `style` attributes get blocked. Declaring it as
+       * an `attribute` resource emits a separate `style-src-attr`, which
+       * hashes do not apply to — that is the directive style attributes are
+       * actually checked against.
+       */
+      styleDirective: {
+        resources: ["'self'", { resource: "'unsafe-inline'", kind: 'attribute' }],
+      },
+      scriptDirective: { resources: ["'self'"] },
+    },
+  },
+  // format 'file' emits /exif-remover.html rather than /exif-remover/index.html.
+  // Cloudflare Pages then serves /exif-remover directly instead of 308-ing to
+  // /exif-remover/, which would contradict our no-trailing-slash canonicals.
+  build: { inlineStylesheets: 'auto', format: 'file' },
   vite: {
     plugins: [tailwindcss()],
     build: { target: 'es2022' },
