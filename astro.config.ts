@@ -33,7 +33,12 @@ export default defineConfig({
         "default-src 'self'",
         "img-src 'self' data: blob:",
         "font-src 'self'",
-        "connect-src 'self'",
+        // Cloudflare Pages injects the Web Analytics beacon into the HTML
+        // response, so the CSP has to admit it or analytics silently collects
+        // nothing. The beacon posts its RUM payload to cloudflareinsights.com.
+        // It carries page-level data only - never anything derived from a
+        // user's file, which is processed entirely on-device.
+        "connect-src 'self' https://cloudflareinsights.com",
         "worker-src 'self' blob:",
         "object-src 'none'",
         "base-uri 'self'",
@@ -50,7 +55,9 @@ export default defineConfig({
       styleDirective: {
         resources: ["'self'", { resource: "'unsafe-inline'", kind: 'attribute' }],
       },
-      scriptDirective: { resources: ["'self'"] },
+      scriptDirective: {
+        resources: ["'self'", 'https://static.cloudflareinsights.com'],
+      },
     },
   },
   // format 'file' emits /exif-remover.html rather than /exif-remover/index.html.
