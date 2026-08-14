@@ -71,7 +71,7 @@ export default function TextScanner() {
           }}
           rows={8}
           placeholder="Paste text here to check it for invisible characters…"
-          className="mt-2 w-full resize-y rounded-[var(--radius-card)] p-3.5 font-mono text-sm"
+          className="nw-evidence-panel mt-2 w-full resize-y p-3.5 font-mono text-sm"
           style={{
             backgroundColor: 'var(--nw-surface)',
             border: '1px solid var(--nw-border-strong)',
@@ -85,7 +85,7 @@ export default function TextScanner() {
 
       {text.length > 0 ? (
         <>
-          <div className="nw-card overflow-hidden">
+          <div className="nw-evidence-panel overflow-hidden">
             <header
               className="px-4 py-3"
               style={{
@@ -129,10 +129,10 @@ export default function TextScanner() {
           </div>
 
           {scan.total > 0 && segments.length > 0 ? (
-            <div className="nw-card p-4">
+            <div className="nw-evidence-panel p-4">
               <h3 className="text-sm font-semibold">Where they are</h3>
               <p
-                className="mt-2 max-h-64 overflow-auto rounded-lg p-3 font-mono text-sm break-words whitespace-pre-wrap"
+                className="mt-2 max-h-64 overflow-auto p-3 font-mono text-sm break-words whitespace-pre-wrap"
                 style={{ backgroundColor: 'var(--nw-surface-muted)' }}
               >
                 {segments.map((segment, i) =>
@@ -174,13 +174,13 @@ export default function TextScanner() {
       ) : null}
 
       {cleaned !== null ? (
-        <div className="nw-card p-4">
+        <div className="nw-evidence-panel p-4">
           <h3 className="text-sm font-semibold">Cleaned text</h3>
           <textarea
             readOnly
             value={cleaned}
             rows={8}
-            className="mt-2 w-full resize-y rounded-lg p-3.5 font-mono text-sm"
+            className="nw-evidence-panel mt-2 w-full resize-y p-3.5 font-mono text-sm"
             style={{
               backgroundColor: 'var(--nw-surface-muted)',
               border: '1px solid var(--nw-border)',

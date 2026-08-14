@@ -15,3 +15,6 @@ npm-debug.log*
 pnpm-debug.log*
 .vscode/
 .idea/
+
+# Agent run logs (large, transient)
+.reports/*.log

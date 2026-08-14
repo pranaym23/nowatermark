@@ -201,7 +201,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
           }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          className="rounded-[var(--radius-card)] border-2 border-dashed px-6 py-12 text-center transition-colors"
+          className="nw-intake px-6 py-12 text-center transition-colors"
           style={{
             borderColor: dragging ? 'var(--nw-accent)' : 'var(--nw-border-strong)',
             backgroundColor: dragging ? 'var(--nw-surface-muted)' : 'var(--nw-surface)',
@@ -223,7 +223,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
               }}
             />
             <span
-              className="mt-1 rounded-lg px-4 py-2 text-sm font-medium"
+              className="nw-button mt-1 px-4 py-2 text-sm"
               style={{ backgroundColor: 'var(--nw-accent)', color: 'var(--nw-accent-contrast)' }}
             >
               Choose a file
@@ -248,12 +248,12 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
       ) : null}
 
       {file && phase !== 'error' ? (
-        <div className="nw-card flex items-center gap-4 p-4">
+        <div className="nw-evidence-panel flex items-center gap-4 p-4">
           {previewUrl ? (
             <img
               src={previewUrl}
               alt=""
-              className="h-16 w-16 shrink-0 rounded-lg object-cover"
+              className="h-16 w-16 shrink-0 object-cover"
               style={{ border: '1px solid var(--nw-border)' }}
             />
           ) : null}
@@ -307,7 +307,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
             ))}
           </div>
 
-          <div className="nw-card flex flex-col gap-3 p-4">
+          <div className="nw-evidence-panel flex flex-col gap-3 p-4">
             <div>
               <h3 className="text-sm font-semibold">Clean metadata</h3>
               <p className="mt-1 text-sm" style={{ color: 'var(--nw-text-muted)' }}>
@@ -395,7 +395,7 @@ function CleanReport({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="nw-card overflow-hidden">
+      <div className="nw-evidence-panel overflow-hidden">
         <header
           className="px-4 py-3"
           style={{ backgroundColor: 'var(--nw-surface-muted)', borderBottom: '1px solid var(--nw-border)' }}
@@ -449,7 +449,7 @@ function CleanReport({
           <a
             href={downloadUrl}
             download={clean.filename}
-            className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium"
+            className="nw-button inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm"
             style={{ backgroundColor: 'var(--nw-accent)', color: 'var(--nw-accent-contrast)' }}
           >
             Download clean image
@@ -460,7 +460,7 @@ function CleanReport({
         </Button>
       </div>
 
-      <details className="nw-card p-4 text-sm">
+      <details className="nw-evidence-panel p-4 text-sm">
         <summary className="cursor-pointer font-medium">Cleaning options</summary>
         <label className="mt-3 flex items-start gap-2.5">
           <input

@@ -7,22 +7,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   description="That page does not exist."
   noindex={true}
 >
-  <div class="nw-shell py-24 text-center">
-    <h1 class="text-3xl font-bold">Page not found</h1>
-    <p class="mx-auto mt-3 max-w-md nw-muted">
-      That page does not exist. The tools are all listed below.
-    </p>
-    <div class="mt-8 flex flex-wrap justify-center gap-3">
+  <div class="nw-shell py-24">
+    <div class="nw-panel text-center">
+      <span class="nw-stamp">Missing</span>
+      <h1 class="text-3xl font-bold">Page not found</h1>
+      <p class="mx-auto mt-3 max-w-md nw-muted">
+        That page does not exist. The tools are all listed below.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
       <a
         href="/"
-        class="rounded-lg px-4 py-2.5 text-sm font-medium"
+        class="nw-button px-4 py-2.5 text-sm"
         style="background-color: var(--nw-accent); color: var(--nw-accent-contrast);">Check a file</a
       >
       <a
         href="/tools"
-        class="nw-card rounded-lg px-4 py-2.5 text-sm font-medium">All tools</a
+        class="nw-evidence-panel nw-button px-4 py-2.5 text-sm">All tools</a
       >
-      <a href="/guides" class="nw-card rounded-lg px-4 py-2.5 text-sm font-medium">Guides</a>
+      <a href="/guides" class="nw-evidence-panel nw-button px-4 py-2.5 text-sm">Guides</a>
+      </div>
     </div>
   </div>
 </BaseLayout>

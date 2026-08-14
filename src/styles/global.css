@@ -5,21 +5,12 @@
  * crisp borders rather than heavy shadows. Light and dark are both first-class.
  */
 @theme {
-  --font-sans:
-    'Inter var', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
-    sans-serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
-  --color-accent-50: oklch(0.97 0.02 275);
-  --color-accent-100: oklch(0.94 0.04 275);
-  --color-accent-200: oklch(0.89 0.07 275);
-  --color-accent-500: oklch(0.6 0.19 275);
-  --color-accent-600: oklch(0.53 0.21 275);
-  --color-accent-700: oklch(0.46 0.19 275);
-
-  --spacing-page: 1.25rem;
-  --radius-card: 0.875rem;
+  --spacing-page: clamp(1rem, 3vw, 1.75rem);
+  --radius-card: 0;
 }
 
 /*
@@ -27,67 +18,63 @@
  * then overridden for dark mode.
  */
 :root {
-  --nw-bg: oklch(0.99 0.002 275);
-  --nw-surface: oklch(1 0 0);
-  --nw-surface-muted: oklch(0.975 0.003 275);
-  --nw-border: oklch(0.9 0.005 275);
-  --nw-border-strong: oklch(0.82 0.008 275);
-  --nw-text: oklch(0.24 0.01 275);
-  --nw-text-muted: oklch(0.51 0.012 275);
-  --nw-accent: oklch(0.53 0.21 275);
-  --nw-accent-contrast: oklch(1 0 0);
-
-  --nw-detected: oklch(0.52 0.14 65);
-  --nw-detected-bg: oklch(0.96 0.04 75);
-  --nw-clear: oklch(0.5 0.12 155);
-  --nw-clear-bg: oklch(0.96 0.04 155);
-  --nw-unknown: oklch(0.5 0.015 275);
-  --nw-unknown-bg: oklch(0.955 0.004 275);
+  --nw-ground: #f2f0e8;
+  --nw-paper: #fffefa;
+  --nw-gutter: #121115;
+  --nw-ink: #121115;
+  --nw-muted: #56535d;
+  --nw-faint: #8a8792;
+  --nw-rule: #d9d5ca;
+  --nw-spot: #c4271a;
+  --nw-spot-soft: #fbeae7;
+  --nw-ok: #1c6b45;
+  --nw-ok-soft: #e6f2eb;
+  --nw-void: #121115;
+  --nw-void-ink: #fffefa;
+  --nw-void-spot: #ef7060;
+  --nw-tone: #121115;
+  --nw-bg: var(--nw-ground);
+  --nw-surface: var(--nw-paper);
+  --nw-surface-muted: var(--nw-spot-soft);
+  --nw-border: var(--nw-rule);
+  --nw-border-strong: var(--nw-ink);
+  --nw-text: var(--nw-ink);
+  --nw-text-muted: var(--nw-muted);
+  --nw-accent: var(--nw-ink);
+  --nw-accent-contrast: var(--nw-paper);
+  --nw-detected: var(--nw-spot);
+  --nw-detected-bg: var(--nw-spot-soft);
+  --nw-clear: var(--nw-ok);
+  --nw-clear-bg: var(--nw-ok-soft);
+  --nw-unknown: var(--nw-faint);
+  --nw-unknown-bg: var(--nw-paper);
 
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --nw-bg: oklch(0.17 0.008 275);
-    --nw-surface: oklch(0.21 0.01 275);
-    --nw-surface-muted: oklch(0.24 0.011 275);
-    --nw-border: oklch(0.3 0.012 275);
-    --nw-border-strong: oklch(0.38 0.015 275);
-    --nw-text: oklch(0.95 0.004 275);
-    --nw-text-muted: oklch(0.71 0.012 275);
-    --nw-accent: oklch(0.72 0.15 275);
-    --nw-accent-contrast: oklch(0.17 0.01 275);
-
-    --nw-detected: oklch(0.8 0.13 75);
-    --nw-detected-bg: oklch(0.3 0.06 70);
-    --nw-clear: oklch(0.78 0.13 155);
-    --nw-clear-bg: oklch(0.28 0.05 155);
-    --nw-unknown: oklch(0.72 0.012 275);
-    --nw-unknown-bg: oklch(0.26 0.008 275);
-
+    --nw-ground: #0c0c0f;
+    --nw-paper: #17171c;
+    --nw-gutter: #000000;
+    --nw-ink: #f1efe9;
+    --nw-muted: #a5a2ac;
+    --nw-faint: #7a7783;
+    --nw-rule: #2c2c34;
+    --nw-spot: #f0604c;
+    --nw-spot-soft: #2e1512;
+    --nw-ok: #5cbf8c;
+    --nw-ok-soft: #12251b;
+    --nw-void: #000000;
+    --nw-void-ink: #f1efe9;
+    --nw-void-spot: #f0604c;
+    --nw-tone: #f1efe9;
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --nw-bg: oklch(0.17 0.008 275);
-  --nw-surface: oklch(0.21 0.01 275);
-  --nw-surface-muted: oklch(0.24 0.011 275);
-  --nw-border: oklch(0.3 0.012 275);
-  --nw-border-strong: oklch(0.38 0.015 275);
-  --nw-text: oklch(0.95 0.004 275);
-  --nw-text-muted: oklch(0.71 0.012 275);
-  --nw-accent: oklch(0.72 0.15 275);
-  --nw-accent-contrast: oklch(0.17 0.01 275);
-
-  --nw-detected: oklch(0.8 0.13 75);
-  --nw-detected-bg: oklch(0.3 0.06 70);
-  --nw-clear: oklch(0.78 0.13 155);
-  --nw-clear-bg: oklch(0.28 0.05 155);
-  --nw-unknown: oklch(0.72 0.012 275);
-  --nw-unknown-bg: oklch(0.26 0.008 275);
-
+  --nw-ground: #0c0c0f; --nw-paper: #17171c; --nw-gutter: #000000; --nw-ink: #f1efe9; --nw-muted: #a5a2ac; --nw-faint: #7a7783; --nw-rule: #2c2c34; --nw-spot: #f0604c; --nw-spot-soft: #2e1512; --nw-ok: #5cbf8c; --nw-ok-soft: #12251b; --nw-void: #000000; --nw-void-ink: #f1efe9; --nw-void-spot: #f0604c; --nw-tone: #f1efe9;
   color-scheme: dark;
 }
 
@@ -163,8 +150,8 @@
 
   .nw-card {
     background-color: var(--nw-surface);
-    border: 1px solid var(--nw-border);
-    border-radius: var(--radius-card);
+    border: 0;
+    border-radius: 0;
   }
 
   .nw-muted {
@@ -173,6 +160,7 @@
 
   /* Long-form guide content. Astro renders Markdown into this wrapper. */
   .nw-content {
+    color: var(--nw-text);
     line-height: 1.7;
   }
   .nw-content > * + * {
@@ -180,12 +168,14 @@
   }
   .nw-content h2 {
     font-size: 1.4rem;
-    font-weight: 650;
+    font-weight: 800;
+    letter-spacing: -.03em;
     margin-block-start: 2.2em;
   }
   .nw-content h3 {
     font-size: 1.1rem;
-    font-weight: 650;
+    font-weight: 700;
+    letter-spacing: -.02em;
     margin-block-start: 1.8em;
   }
   .nw-content a {
@@ -239,5 +229,57 @@
   .nw-scroll-x {
     overflow-x: auto;
     max-width: 100%;
+  }
+
+  .nw-panel-grid {
+    display: grid;
+    gap: 5px;
+    background: var(--nw-gutter);
+  }
+  .nw-panel {
+    position: relative;
+    background: var(--nw-paper);
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+  }
+  .nw-panel-label {
+    color: var(--nw-faint);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+  .nw-stamp {
+    display: inline-block;
+    border: 2px solid var(--nw-spot);
+    border-radius: 4px;
+    color: var(--nw-spot);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    padding: .3rem .45rem;
+    transform: rotate(-11deg);
+  }
+  .nw-tone::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: radial-gradient(circle at center, var(--nw-tone) 1.05px, transparent 1.15px);
+    background-size: 4px 4px;
+    content: '';
+    opacity: .10;
+    pointer-events: none;
+  }
+  .nw-tone > * { position: relative; z-index: 1; }
+  .nw-evidence-panel { --nw-evidence-text: var(--nw-text); --nw-evidence-muted: var(--nw-text-muted); background: var(--nw-paper); border: 1px solid var(--nw-rule); border-radius: 0; }
+  .nw-evidence-panel--void { --nw-evidence-text: var(--nw-void-ink); --nw-evidence-muted: var(--nw-void-ink); background: var(--nw-void); border-color: var(--nw-void); color: var(--nw-void-ink); }
+  .nw-status { border-radius: 0; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+  .nw-button { border-radius: 0; font-weight: 750; }
+  .nw-intake { border: 2px dashed var(--nw-ink); border-radius: 0; background: var(--nw-paper); }
+  .nw-page-header { border-bottom: 5px solid var(--nw-gutter); }
+  .nw-calm-header { border-inline-start: 5px solid var(--nw-gutter); padding-inline-start: 1.25rem; }
+
+  @media (max-width: 639px) {
+    .nw-panel-grid { gap: 4px; }
+    .nw-panel { padding: 1.25rem; }
   }
 }

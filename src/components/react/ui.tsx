@@ -14,14 +14,14 @@ const STATUS_STYLE: Record<SignalStatus, { bg: string; fg: string; glyph: string
   detected: { bg: 'var(--nw-detected-bg)', fg: 'var(--nw-detected)', glyph: '●' },
   not_detected: { bg: 'var(--nw-clear-bg)', fg: 'var(--nw-clear)', glyph: '○' },
   unknown: { bg: 'var(--nw-unknown-bg)', fg: 'var(--nw-unknown)', glyph: '?' },
-  unable_to_verify: { bg: 'var(--nw-unknown-bg)', fg: 'var(--nw-unknown)', glyph: '?' },
+  unable_to_verify: { bg: 'var(--nw-void)', fg: 'var(--nw-void-ink)', glyph: '?' },
 };
 
 export function StatusPill({ status }: { status: SignalStatus }) {
   const style = STATUS_STYLE[status];
   return (
     <span
-      className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap"
+      className="nw-status inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1 text-xs whitespace-nowrap"
       style={{ backgroundColor: style.bg, color: style.fg }}
     >
       <span aria-hidden="true">{style.glyph}</span>
@@ -54,14 +54,14 @@ export function OutcomePill({ outcome }: { outcome: SignalOutcome }) {
 /** One scan result, with its explanation behind a disclosure. */
 export function SignalRow({ signal }: { signal: SignalResult }) {
   return (
-    <details className="group border-b last:border-b-0" style={{ borderColor: 'var(--nw-border)' }}>
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3 hover:bg-[var(--nw-surface-muted)]">
+    <details className={`nw-evidence-panel group ${signal.status === 'unable_to_verify' ? 'nw-evidence-panel--void' : ''}`}>
+      <summary className={`flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3 ${signal.status === 'unable_to_verify' ? '' : 'hover:bg-[var(--nw-surface-muted)]'}`}>
         <span className="min-w-0">
           <span className="flex items-center gap-2">
             <span
               className="text-[0.7rem] transition-transform group-open:rotate-90"
               aria-hidden="true"
-              style={{ color: 'var(--nw-text-muted)' }}
+              style={{ color: 'var(--nw-evidence-muted)' }}
             >
               ▶
             </span>
@@ -70,7 +70,7 @@ export function SignalRow({ signal }: { signal: SignalResult }) {
           {signal.value ? (
             <span
               className="mt-0.5 block truncate pl-5 font-mono text-xs"
-              style={{ color: 'var(--nw-text-muted)' }}
+              style={{ color: 'var(--nw-evidence-muted)' }}
               title={signal.value}
             >
               {signal.value}
@@ -79,10 +79,10 @@ export function SignalRow({ signal }: { signal: SignalResult }) {
         </span>
         <StatusPill status={signal.status} />
       </summary>
-      <div className="px-4 pb-4 pl-9 text-sm" style={{ color: 'var(--nw-text-muted)' }}>
+      <div className="px-4 pb-4 pl-9 text-sm" style={{ color: 'var(--nw-evidence-muted)' }}>
         <p>{signal.detail ?? signal.description}</p>
         <p className="mt-2 text-xs">
-          <span className="font-medium" style={{ color: 'var(--nw-text)' }}>
+          <span className="font-medium" style={{ color: 'var(--nw-evidence-text)' }}>
             Can NoWatermark remove this?{' '}
           </span>
           {signal.removable === true
@@ -109,7 +109,7 @@ export function ResultGroup({
   const detected = signals.filter((s) => s.status === 'detected').length;
 
   return (
-    <section className="nw-card overflow-hidden">
+    <section className="nw-evidence-panel overflow-hidden">
       <header
         className="flex items-baseline justify-between gap-3 px-4 py-3"
         style={{ backgroundColor: 'var(--nw-surface-muted)', borderBottom: '1px solid var(--nw-border)' }}
@@ -124,7 +124,7 @@ export function ResultGroup({
           {detected} found
         </span>
       </header>
-      <div>
+      <div className="grid gap-2 p-2">
         {signals.map((s) => (
           <SignalRow key={s.id} signal={s} />
         ))}
@@ -139,7 +139,7 @@ export function Button({
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' }) {
   const base =
-    'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-55';
+    'nw-button inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-55';
   const style =
     variant === 'primary'
       ? { backgroundColor: 'var(--nw-accent)', color: 'var(--nw-accent-contrast)' }
@@ -164,7 +164,7 @@ export function Notice({
 }) {
   return (
     <div
-      className="rounded-lg border px-3.5 py-3 text-sm"
+      className="nw-evidence-panel px-3.5 py-3 text-sm"
       style={{
         backgroundColor: tone === 'warn' ? 'var(--nw-detected-bg)' : 'var(--nw-surface-muted)',
         borderColor: tone === 'warn' ? 'var(--nw-detected)' : 'var(--nw-border)',
