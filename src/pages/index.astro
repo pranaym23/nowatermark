@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import Faq from '../components/Faq.astro';
-import ImageScanner from '../components/react/ImageScanner';
+import ScannerTabs from '../components/react/ScannerTabs';
 import { FEATURED_TOOLS, SITE } from '../lib/site';
 import { getCollection } from 'astro:content';
 
@@ -10,7 +10,7 @@ const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.d
 
 const title = 'AI Watermark Checker & Metadata Remover | NoWatermark';
 const description =
-  'Check images for AI provenance, C2PA, Content Credentials and hidden metadata. Remove supported metadata privately in your browser.';
+  'Check images for AI provenance, C2PA and hidden metadata, or scan text for invisible Unicode characters. Everything runs privately in your browser - nothing is uploaded.';
 
 const faq = [
   {
@@ -24,6 +24,10 @@ const faq = [
   {
     q: 'Does cleaning reduce image quality?',
     a: 'No. Metadata is removed at the container level and the compressed image data is copied byte-for-byte, so the pixels are identical afterwards.',
+  },
+  {
+    q: 'What does the text checker find?',
+    a: 'Invisible Unicode - zero-width spaces, bidirectional controls and Unicode tag characters that survive copy and paste. It deliberately preserves the zero-width joiners and variation selectors that emoji need, so cleaning does not break them. It does not detect statistical AI-text watermarks, and no browser-based tool can.',
   },
   {
     q: 'Which formats are supported?',
@@ -66,13 +70,14 @@ const schema = [
           <p class="nw-panel-label">Metadata investigation</p>
           <h1 class="mt-4 text-4xl font-extrabold sm:text-5xl">Every file is hiding something.</h1>
           <p class="mt-4 max-w-xl text-lg nw-muted">
-        See what AI and metadata fingerprints are hiding inside your files.
+            Drop an image to see the metadata and AI provenance it carries, or paste text to
+            find the invisible characters hiding in it. Both run entirely in your browser.
           </p>
         </div>
         <span class="nw-stamp self-start">Case open</span>
       </div>
-      <div class="nw-panel flex items-center">
-        <ImageScanner client:load />
+      <div class="nw-panel flex items-start">
+        <ScannerTabs client:load />
       </div>
     </div>
   </section>
