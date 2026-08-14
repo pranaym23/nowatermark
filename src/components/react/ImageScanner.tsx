@@ -207,7 +207,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
             backgroundColor: dragging ? 'var(--nw-surface-muted)' : 'var(--nw-surface)',
           }}
         >
-          <label className="inline-flex cursor-pointer flex-col items-center gap-3">
+          <label className="nw-file-label inline-flex cursor-pointer flex-col items-center gap-3">
             <span className="text-lg font-semibold">Drop an image here</span>
             <span className="text-sm" style={{ color: 'var(--nw-text-muted)' }}>
               or choose a file
@@ -223,7 +223,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
               }}
             />
             <span
-              className="nw-button mt-1 px-4 py-2 text-sm"
+              className="nw-file-cta nw-button mt-1 px-4 py-2 text-sm"
               style={{ backgroundColor: 'var(--nw-accent)', color: 'var(--nw-accent-contrast)' }}
             >
               Choose a file

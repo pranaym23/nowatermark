@@ -1,0 +1,31 @@
+---
+/**
+ * The NoWatermark mark, inlined so the ink follows the current text colour
+ * and therefore works in both themes. The accent square stays red in both.
+ */
+interface Props {
+  size?: number;
+  class?: string;
+}
+
+const { size = 22, class: className } = Astro.props;
+---
+
+<svg
+  viewBox="0 0 100 100"
+  width={size}
+  height={size}
+  class={className}
+  role="img"
+  aria-label="NoWatermark"
+  fill="none"
+>
+  <g fill="currentColor">
+    <path d="M10 10 H46 V24 H24 V46 H10 Z"></path>
+    <path d="M54 10 H90 V46 H76 V24 H54 Z"></path>
+    <path d="M10 54 H24 V76 H46 V90 H10 Z"></path>
+    <path d="M76 54 H90 V90 H54 V76 H76 Z"></path>
+    <path d="M27 38 H40 L73 76 V89 H60 L27 51 Z"></path>
+  </g>
+  <rect x="58" y="31" width="12" height="12" fill="var(--nw-spot)"></rect>
+</svg>

@@ -1,5 +1,6 @@
 ---
 import { NAV_TOOLS, SITE } from '../lib/site';
+import Logo from './Logo.astro';
 
 const current = Astro.url.pathname.replace(/\/$/, '');
 ---
@@ -9,7 +10,8 @@ const current = Astro.url.pathname.replace(/\/$/, '');
   style="border-color: var(--nw-gutter); background-color: var(--nw-paper);"
 >
   <div class="nw-shell flex h-14 items-center justify-between gap-4">
-    <a href="/" class="flex items-baseline gap-2 font-extrabold tracking-tight">
+    <a href="/" class="flex items-center gap-2 font-extrabold tracking-tight">
+      <Logo size={22} />
       <span>{SITE.name}</span>
       <span class="hidden text-xs font-normal nw-muted sm:inline">{SITE.descriptor}</span>
     </a>

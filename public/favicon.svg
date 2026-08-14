@@ -1,5 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#4f46e5"/>
-  <path d="M9 20.5V11h2.4l5.2 6.2V11H19v9.5h-2.4l-5.2-6.2v6.2z" fill="#fff"/>
-  <path d="M6 26.5 26 5.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!--
+    Favicon variant: heavier strokes and less padding than logo.svg, because
+    the full mark's proportions go muddy below ~48px. The ink colour flips
+    with the browser theme so the mark does not disappear in a dark tab strip.
+  -->
+  <style>
+    .ink { fill: #121115; }
+    @media (prefers-color-scheme: dark) { .ink { fill: #f1efe9; } }
+  </style>
+  <g class="ink">
+    <path d="M4 4 H46 V22 H22 V46 H4 Z"/>
+    <path d="M54 4 H96 V46 H78 V22 H54 Z"/>
+    <path d="M4 54 H22 V78 H46 V96 H4 Z"/>
+    <path d="M78 54 H96 V96 H54 V78 H78 Z"/>
+    <path d="M22 28 H46 L78 60 V78 H54 L22 46 Z"/>
+  </g>
+  <rect x="62" y="26" width="12" height="12" fill="#c4271a"/>
 </svg>

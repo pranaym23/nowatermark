@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="NoWatermark">
+  <!--
+    Four print-registration brackets enclose a negative-space N.
+    The brackets are broken at the midline, the way registration marks are,
+    which is also what lets the counter read as a letter rather than a frame.
+    Redrawn as vector from concept 05 so it stays crisp at any size.
+  -->
+  <g fill="#121115">
+    <path d="M10 10 H46 V24 H24 V46 H10 Z"/>
+    <path d="M54 10 H90 V46 H76 V24 H54 Z"/>
+    <path d="M10 54 H24 V76 H46 V90 H10 Z"/>
+    <path d="M76 54 H90 V90 H54 V76 H76 Z"/>
+    <path d="M27 38 H40 L73 76 V89 H60 L27 51 Z"/>
+  </g>
+  <rect x="58" y="31" width="12" height="12" fill="#c4271a"/>
+</svg>

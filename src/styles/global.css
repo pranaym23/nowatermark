@@ -23,7 +23,7 @@
   --nw-gutter: #121115;
   --nw-ink: #121115;
   --nw-muted: #56535d;
-  --nw-faint: #8a8792;
+  --nw-faint: #6f6c7a;
   --nw-rule: #d9d5ca;
   --nw-spot: #c4271a;
   --nw-spot-soft: #fbeae7;
@@ -59,7 +59,7 @@
     --nw-gutter: #000000;
     --nw-ink: #f1efe9;
     --nw-muted: #a5a2ac;
-    --nw-faint: #7a7783;
+    --nw-faint: #8e8b98;
     --nw-rule: #2c2c34;
     --nw-spot: #f0604c;
     --nw-spot-soft: #2e1512;
@@ -74,7 +74,7 @@
 }
 
 :root[data-theme='dark'] {
-  --nw-ground: #0c0c0f; --nw-paper: #17171c; --nw-gutter: #000000; --nw-ink: #f1efe9; --nw-muted: #a5a2ac; --nw-faint: #7a7783; --nw-rule: #2c2c34; --nw-spot: #f0604c; --nw-spot-soft: #2e1512; --nw-ok: #5cbf8c; --nw-ok-soft: #12251b; --nw-void: #000000; --nw-void-ink: #f1efe9; --nw-void-spot: #f0604c; --nw-tone: #f1efe9;
+  --nw-ground: #0c0c0f; --nw-paper: #17171c; --nw-gutter: #000000; --nw-ink: #f1efe9; --nw-muted: #a5a2ac; --nw-faint: #8e8b98; --nw-rule: #2c2c34; --nw-spot: #f0604c; --nw-spot-soft: #2e1512; --nw-ok: #5cbf8c; --nw-ok-soft: #12251b; --nw-void: #000000; --nw-void-ink: #f1efe9; --nw-void-spot: #f0604c; --nw-tone: #f1efe9;
   color-scheme: dark;
 }
 
@@ -226,6 +226,12 @@
   }
 
   /* Wide content must scroll inside itself, never the page. */
+  /* The real <input type=file> is sr-only, so focus must show on its label. */
+  .nw-file-label:focus-within .nw-file-cta {
+    outline: 2px solid var(--nw-accent);
+    outline-offset: 3px;
+  }
+
   .nw-scroll-x {
     overflow-x: auto;
     max-width: 100%;
@@ -259,11 +265,17 @@
     padding: .3rem .45rem;
     transform: rotate(-11deg);
   }
+  /*
+   * The tone is masked to a corner wedge so it never sits behind a paragraph
+   * (spec section 5). Full-bleed tone hurt legibility on the hero.
+   */
   .nw-tone::after {
     position: absolute;
     inset: 0;
     z-index: 0;
     background-image: radial-gradient(circle at center, var(--nw-tone) 1.05px, transparent 1.15px);
+    -webkit-mask-image: linear-gradient(215deg, #000 0%, transparent 42%);
+    mask-image: linear-gradient(215deg, #000 0%, transparent 42%);
     background-size: 4px 4px;
     content: '';
     opacity: .10;
