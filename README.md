@@ -211,33 +211,58 @@ container manipulation in `tests/fixtures/build.ts` is written independently of
 
 ## Deployment (Cloudflare Pages)
 
+**Live at https://nowatermark.fyi.** Deployment is automatic: push to `main` and
+Cloudflare Pages builds and publishes. There is no manual `wrangler` step.
+
 | Setting | Value |
 |---|---|
+| Project | `nowatermark` (Git-connected) |
 | Build command | `pnpm build` |
 | Output directory | `dist` |
-| Node version | 20 or later |
-| Environment variables | none required |
+| Production branch | `main` |
+| Node | 22, pinned in `.node-version` |
+| Environment variables | none — the app requires no secrets |
 
-`public/_headers` sets a strict CSP (no third-party script, no outbound
-connections) plus security headers and immutable caching for hashed assets.
+`public/_headers` sets security headers and immutable caching for hashed assets.
 
-Enabling Cloudflare Web Analytics later means adding
-`https://static.cloudflareinsights.com` to `script-src` and `connect-src`.
-Enabling AdSense requires loosening the CSP substantially — keep that change
-confined to `_headers` so it is reviewable in one diff.
+### The CSP is NOT in _headers
 
-### Analytics note
+It is generated per page by Astro (`security.csp` in `astro.config.ts`) so the
+hashes for Astro's inline hydration scripts stay correct on every build. Two
+production outages were caused by getting this wrong, and neither was visible
+locally because `astro preview` does not apply `_headers`.
 
-Cloudflare Web Analytics is **pageview-based and has no custom events API**, so
-the funnel events described in the PRD cannot be recorded with it. Ship it for
-traffic and Core Web Vitals; treat event-level tracking as a separate, explicit
-decision (Plausible/Fathom, GA4, or a minimal Pages Function as a documented
-exception to the zero-backend rule).
+**Any new third-party script must be added to `security.csp`, then verified by
+loading the deployed URL and checking the console.** A CSP failure is silent.
 
-Analytics and advertising are always additive: if either is blocked or fails,
-every tool continues to work.
+### Analytics
 
-Google Analytics 4 is also enabled (`public/ga.js`, loaded from
-`BaseLayout.astro`). It sets cookies, unlike the Cloudflare beacon — the
-privacy page says so explicitly. If you operate in a jurisdiction requiring
-prior consent for analytics cookies, that consent gate is not built yet.
+- **Cloudflare Web Analytics** — cookieless, auto-injected by Pages.
+- **Google Analytics 4** — `G-LXNWBS7347`, configured in `public/ga.js`. It
+  **sets cookies**, unlike the Cloudflare beacon; `/privacy` says so explicitly.
+  If you operate where prior consent is required for analytics cookies, that
+  consent gate is not built yet.
+
+Neither ever receives file-derived data — files never leave the device, so there
+is nothing for analytics to collect. Both are additive: if either is blocked,
+every tool still works.
+
+Event-level funnel tracking does not exist. Cloudflare Web Analytics has no
+custom events API; GA4 could carry it, but any event must stay page-level.
+
+### SEO
+
+- Sitemap: `https://nowatermark.fyi/sitemap-index.xml`, regenerated each build
+  and declared in `robots.txt`. Submit that URL to Google Search Console and
+  Bing Webmaster Tools.
+- `build.format: 'file'` is deliberate — it emits `/exif-remover.html` so
+  Cloudflare serves `/exif-remover` without a 308 to `/exif-remover/`, matching
+  the no-trailing-slash canonicals.
+- Research and the remaining article backlog live in `.seo/`.
+
+---
+
+## Working on this
+
+See **`CLAUDE.md`** for the non-negotiables, the CSP gotchas, the design system
+and the known traps. Read it before changing anything.

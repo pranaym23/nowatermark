@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-labelledby="title desc">
+  <title id="title">NoWatermark social header</title>
+  <desc id="desc">NoWatermark brand header with registration-frame logo, product tagline, and privacy message.</desc>
+  <defs>
+    <pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.15" fill="#121115" opacity="0.18"/>
+    </pattern>
+    <linearGradient id="dotFade" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.42" stop-color="#fff" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#fff"/>
+    </linearGradient>
+    <mask id="dotWedge">
+      <rect width="1500" height="500" fill="url(#dotFade)"/>
+    </mask>
+  </defs>
+
+  <!-- Warm paper and the five-pixel panel rules used throughout the site. -->
+  <rect width="1500" height="500" fill="#f2f0e8"/>
+  <rect width="1500" height="5" fill="#121115"/>
+  <rect y="495" width="1500" height="5" fill="#121115"/>
+  <rect x="0" y="5" width="145" height="490" fill="#121115"/>
+  <rect x="145" y="5" width="5" height="490" fill="#c4271a"/>
+
+  <!-- Quiet forensic texture, matching the homepage's nw-tone corner wedge. -->
+  <rect x="720" y="5" width="780" height="490" fill="url(#dots)" mask="url(#dotWedge)"/>
+
+  <!-- Brand lockup. Logo paths are the production mark from public/logo.svg. -->
+  <g transform="translate(235 60)">
+    <g transform="scale(.78)" fill="#121115">
+      <path d="M10 10 H46 V24 H24 V46 H10 Z"/>
+      <path d="M54 10 H90 V46 H76 V24 H54 Z"/>
+      <path d="M10 54 H24 V76 H46 V90 H10 Z"/>
+      <path d="M76 54 H90 V90 H54 V76 H76 Z"/>
+      <path d="M27 38 H40 L73 76 V89 H60 L27 51 Z"/>
+      <rect x="58" y="31" width="12" height="12" fill="#c4271a"/>
+    </g>
+    <text x="94" y="34" fill="#121115" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="30" font-weight="800" letter-spacing="-1">NoWatermark</text>
+    <text x="95" y="58" fill="#56535d" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="14">AI provenance &amp; metadata tools</text>
+  </g>
+
+  <!-- Core product message. -->
+  <g transform="translate(235 188)" font-family="system-ui,-apple-system,'Segoe UI',sans-serif">
+    <text x="0" y="0" fill="#6f6c7a" font-size="13" font-weight="800" letter-spacing="2.2">METADATA INVESTIGATION</text>
+    <text x="0" y="71" fill="#121115" font-size="66" font-weight="850" letter-spacing="-3.1">See what your</text>
+    <text x="0" y="138" fill="#121115" font-size="66" font-weight="850" letter-spacing="-3.1">file reveals.</text>
+    <line x1="0" y1="174" x2="640" y2="174" stroke="#121115" stroke-width="2"/>
+    <text x="0" y="209" fill="#56535d" font-size="18">Check provenance. Remove metadata. Keep your files private.</text>
+  </g>
+
+  <!-- Evidence panel: product capabilities presented in the site's own UI language. -->
+  <g transform="translate(1040 83)" font-family="system-ui,-apple-system,'Segoe UI',sans-serif">
+    <rect width="360" height="300" fill="#fffefa" stroke="#121115" stroke-width="3"/>
+    <rect width="360" height="52" fill="#121115"/>
+    <text x="22" y="33" fill="#fffefa" font-size="12" font-weight="800" letter-spacing="1.7">INSPECTION REPORT</text>
+
+    <text x="22" y="86" fill="#6f6c7a" font-size="11" font-weight="800" letter-spacing="1.3">01</text>
+    <text x="62" y="86" fill="#121115" font-size="16" font-weight="700">AI provenance</text>
+    <rect x="276" y="70" width="62" height="22" fill="#fbeae7"/>
+    <text x="307" y="85" fill="#c4271a" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">CHECK</text>
+    <line x1="22" y1="105" x2="338" y2="105" stroke="#d9d5ca"/>
+
+    <text x="22" y="139" fill="#6f6c7a" font-size="11" font-weight="800" letter-spacing="1.3">02</text>
+    <text x="62" y="139" fill="#121115" font-size="16" font-weight="700">Private metadata</text>
+    <rect x="276" y="123" width="62" height="22" fill="#fbeae7"/>
+    <text x="307" y="138" fill="#c4271a" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">CLEAN</text>
+    <line x1="22" y1="158" x2="338" y2="158" stroke="#d9d5ca"/>
+
+    <text x="22" y="192" fill="#6f6c7a" font-size="11" font-weight="800" letter-spacing="1.3">03</text>
+    <text x="62" y="192" fill="#121115" font-size="16" font-weight="700">Hidden characters</text>
+    <rect x="276" y="176" width="62" height="22" fill="#e6f2eb"/>
+    <text x="307" y="191" fill="#1c6b45" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="1">FIND</text>
+
+    <g transform="translate(22 232) rotate(-5)">
+      <rect width="204" height="42" rx="3" fill="none" stroke="#c4271a" stroke-width="3"/>
+      <text x="102" y="27" fill="#c4271a" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1.4">PROCESSED LOCALLY</text>
+    </g>
+  </g>
+
+  <!-- Registration notation and URL. -->
+  <g font-family="ui-monospace,'SFMono-Regular',Menlo,monospace" font-size="12">
+    <text x="37" y="45" fill="#fffefa" opacity="0.72" transform="rotate(90 37 45)" letter-spacing="2">NW / 001</text>
+    <text x="1225" y="444" fill="#56535d" letter-spacing="1.2">NOWATERMARK.FYI</text>
+  </g>
+  <rect x="1373" y="425" width="27" height="27" fill="#c4271a"/>
+</svg>

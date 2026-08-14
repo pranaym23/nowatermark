@@ -18,3 +18,8 @@ pnpm-debug.log*
 
 # Agent run logs (large, transient)
 .reports/*.log
+
+# Large intermediate art files. Finished exports in assets/ are committed;
+# multi-MB sources stay local.
+assets/x-header-source.png
+assets/x-header-cropped.png
