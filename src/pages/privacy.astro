@@ -48,23 +48,38 @@ const description =
       </p>
 
       <h2>Analytics</h2>
+      <p>We use two analytics tools, and they behave differently.</p>
       <p>
-        We use Cloudflare Web Analytics to understand which pages people find useful. It is
-        privacy-focused: it does not use cookies, does not fingerprint visitors, and does not track
-        people across sites. It records page URLs, referrers, general performance timings and coarse
-        location at country level.
+        <strong>Cloudflare Web Analytics</strong> is cookieless. It does not fingerprint visitors
+        and does not track people across sites. It records page URLs, referrers, general performance
+        timings and coarse location at country level.
       </p>
       <p>
-        No analytics event carries anything derived from your file or your pasted text. Analytics is
-        also entirely optional to the product: if you block it, every tool continues to work
-        normally.
+        <strong>Google Analytics 4</strong> is not cookieless. It sets cookies in your browser
+        (<code>_ga</code> and related), assigns your browser a pseudonymous identifier so returning
+        visits can be recognised, and sends that data to Google, who may use it in line with their
+        own policies. We use it to understand which pages and search terms bring people here.
+      </p>
+      <p>
+        Neither tool ever receives anything derived from your file or your pasted text. That is a
+        hard architectural boundary, not a setting: files are read and cleaned entirely on your
+        device and are never transmitted, so there is nothing about their contents for an analytics
+        tool to collect.
+      </p>
+      <p>
+        Analytics is optional to the product. If you block it — with an extension, a tracker
+        blocker, or Do Not Track — every tool continues to work exactly the same.
       </p>
 
       <h2>Cookies</h2>
       <p>
-        We do not set cookies for analytics or tracking. If we introduce advertising in future, ad
-        providers may set their own cookies, and this page will be updated to say so plainly before
-        that happens.
+        Google Analytics sets cookies, as described above. Cloudflare Web Analytics does not, and we
+        set none of our own for logins, preferences or tracking, because there is nothing to log in
+        to and nothing stored.
+      </p>
+      <p>
+        If we introduce advertising in future, ad providers may set their own cookies, and this page
+        will be updated to say so plainly before that happens.
       </p>
 
       <h2>Advertising</h2>

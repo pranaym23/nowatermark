@@ -56,6 +56,15 @@ const ogImage = new URL('/og.svg', SITE.url).href;
         <script type="application/ld+json" set:html={JSON.stringify(item)} is:inline />
       ))
     }
+
+    <!-- Google Analytics 4. Both scripts are external so the CSP needs no
+         inline hashes; the config lives in /ga.js. -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-LXNWBS7347"
+      is:inline
+    ></script>
+    <script async src="/ga.js" is:inline></script>
   </head>
   <body class="flex min-h-dvh flex-col">
     <a

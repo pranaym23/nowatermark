@@ -163,7 +163,10 @@ tests/
 └── *.test.ts             scan, clean, unicode, filetype, decodable
 ```
 
-Guide pages ship **zero JavaScript**; the scanner loads only on tool pages.
+Guide pages load **no application JavaScript** — the React scanner bundle is
+only sent on pages that have a tool. Every page does carry two small async
+analytics tags (Cloudflare Web Analytics, Google Analytics); neither blocks
+rendering and neither receives any file-derived data.
 
 ---
 
@@ -233,3 +236,8 @@ exception to the zero-backend rule).
 
 Analytics and advertising are always additive: if either is blocked or fails,
 every tool continues to work.
+
+Google Analytics 4 is also enabled (`public/ga.js`, loaded from
+`BaseLayout.astro`). It sets cookies, unlike the Cloudflare beacon — the
+privacy page says so explicitly. If you operate in a jurisdiction requiring
+prior consent for analytics cookies, that consent gate is not built yet.

@@ -31,14 +31,14 @@ export default defineConfig({
       algorithm: 'SHA-256',
       directives: [
         "default-src 'self'",
-        "img-src 'self' data: blob:",
+        "img-src 'self' data: blob: https://*.google-analytics.com https://www.googletagmanager.com",
         "font-src 'self'",
         // Cloudflare Pages injects the Web Analytics beacon into the HTML
         // response, so the CSP has to admit it or analytics silently collects
         // nothing. The beacon posts its RUM payload to cloudflareinsights.com.
         // It carries page-level data only - never anything derived from a
         // user's file, which is processed entirely on-device.
-        "connect-src 'self' https://cloudflareinsights.com",
+        "connect-src 'self' https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
         "worker-src 'self' blob:",
         "object-src 'none'",
         "base-uri 'self'",
@@ -56,7 +56,11 @@ export default defineConfig({
         resources: ["'self'", { resource: "'unsafe-inline'", kind: 'attribute' }],
       },
       scriptDirective: {
-        resources: ["'self'", 'https://static.cloudflareinsights.com'],
+        resources: [
+          "'self'",
+          'https://static.cloudflareinsights.com',
+          'https://www.googletagmanager.com',
+        ],
       },
     },
   },
