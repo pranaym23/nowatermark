@@ -1,0 +1,976 @@
+<title>NoWatermark Manga Directions</title>
+<style>
+  /* ============================================================
+     FRAME -- ink and paper, kept restrained. Enough character to
+     belong to the subject, quiet enough that the three directions
+     do the talking. Neutrals biased warm toward newsprint.
+     ============================================================ */
+  :root {
+    --f-bg: #f7f6f2;
+    --f-surface: #ffffff;
+    --f-sunken: #edebe4;
+    --f-line: #ddd9cf;
+    --f-line-soft: #e8e5dc;
+    --f-text: #14131a;
+    --f-muted: #5c5a63;
+    --f-faint: #8b8892;
+    --f-accent: #c0271a;
+    --f-accent-soft: #f7e6e3;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --jp: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", Meiryo, var(--sans);
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --f-bg: #131318;
+      --f-surface: #1b1b21;
+      --f-sunken: #212128;
+      --f-line: #32323c;
+      --f-line-soft: #292930;
+      --f-text: #f0eee9;
+      --f-muted: #a8a5b0;
+      --f-faint: #7b7885;
+      --f-accent: #f2695a;
+      --f-accent-soft: #33201d;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --f-bg: #131318;
+    --f-surface: #1b1b21;
+    --f-sunken: #212128;
+    --f-line: #32323c;
+    --f-line-soft: #292930;
+    --f-text: #f0eee9;
+    --f-muted: #a8a5b0;
+    --f-faint: #7b7885;
+    --f-accent: #f2695a;
+    --f-accent-soft: #33201d;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--f-bg);
+    color: var(--f-text);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+
+  :focus-visible { outline: 2px solid var(--f-accent); outline-offset: 3px; }
+
+  .wrap { max-width: 1180px; margin-inline: auto; padding: 0 24px; }
+  h1, h2, h3, h4 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+  p { margin: 0; text-wrap: pretty; }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--f-faint);
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead { position: relative; padding: 74px 0 46px; border-bottom: 2px solid var(--f-text); overflow: hidden; }
+  .masthead::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; color: var(--f-text);
+    background-image: radial-gradient(circle at center, currentColor 1.05px, transparent 1.15px);
+    background-size: 5px 5px; opacity: .07;
+    -webkit-mask-image: linear-gradient(255deg, #000 0%, transparent 46%);
+    mask-image: linear-gradient(255deg, #000 0%, transparent 46%);
+  }
+  .masthead > .wrap { position: relative; z-index: 1; }
+  .masthead h1 { font-size: clamp(31px, 4.6vw, 48px); font-weight: 700; line-height: 1.06; }
+  .masthead .lede { margin-top: 18px; max-width: 60ch; font-size: 17px; color: var(--f-muted); }
+
+  .brieflist {
+    margin-top: 30px; display: grid; gap: 14px 30px;
+    grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+  }
+  .brief dt { font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--f-faint); }
+  .brief dd { margin: 5px 0 0; font-size: 14px; }
+
+  /* ---------- direction ---------- */
+  .direction { padding: 64px 0; border-bottom: 1px solid var(--f-line); }
+  .dir-head { display: grid; gap: 26px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) { .dir-head { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 48px; } }
+
+  .dir-name { display: flex; align-items: baseline; gap: 13px; flex-wrap: wrap; }
+  .dir-name .romaji { font-size: clamp(25px, 3vw, 33px); font-weight: 700; line-height: 1.1; }
+  .dir-name .kanji { font-family: var(--jp); font-size: 21px; font-weight: 600; color: var(--f-accent); }
+  .dir-name .gloss { font-size: 13px; color: var(--f-faint); }
+  .swatchrow { display: flex; gap: 6px; align-items: center; }
+  .swatch { width: 17px; height: 17px; border-radius: 3px; border: 1px solid rgba(120,116,110,.35); }
+
+  .thesis { margin-top: 14px; font-size: 16px; color: var(--f-muted); max-width: 56ch; }
+
+  .specs { display: grid; gap: 12px; align-content: start; }
+  .spec { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 14px; font-size: 13.5px; align-items: baseline; }
+  .spec dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--f-faint); }
+  .spec dd { margin: 0; color: var(--f-muted); }
+  .spec dd b { color: var(--f-text); font-weight: 600; }
+
+  .screens { margin-top: 38px; display: grid; gap: 22px; }
+  @media (min-width: 860px) { .screens { grid-template-columns: 1fr 1fr; gap: 26px; } }
+  .screen { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+  .screen-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--f-faint); }
+
+  .frame {
+    border: 1px solid var(--f-line); border-radius: 10px; overflow: hidden; background: var(--f-surface);
+    box-shadow: 0 1px 2px rgba(20,19,26,.05), 0 10px 26px -14px rgba(20,19,26,.2);
+  }
+  .chrome { display: flex; align-items: center; gap: 8px; padding: 8px 11px; background: var(--f-sunken); border-bottom: 1px solid var(--f-line); }
+  .dots { display: flex; gap: 5px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--f-line); display: block; }
+  .urlbar {
+    flex: 1; font-family: var(--mono); font-size: 10px; color: var(--f-faint); background: var(--f-surface);
+    border: 1px solid var(--f-line); border-radius: 5px; padding: 3px 8px; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ============================================================
+     SHARED MOCKUP BASE -- colours scoped per direction so a mockup
+     never inherits the viewer's theme.
+     ============================================================ */
+  .mock {
+    position: relative; background: var(--m-bg); color: var(--m-ink);
+    font-family: var(--sans); padding: var(--m-pad); min-height: 360px;
+    display: flex; flex-direction: column; gap: var(--m-gap); overflow: hidden;
+  }
+  .mock * { box-sizing: border-box; }
+  .jp { font-family: var(--jp); }
+
+  /* Screentone utility. Sits behind content, tinted by currentColor. */
+  .tone {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(circle at center, currentColor 1.05px, transparent 1.15px);
+    background-size: 4px 4px; opacity: .16;
+  }
+
+  /* ---------------- A - TANTEI ---------------- */
+  .tantei {
+    --m-bg: #f5f3ec; --m-ink: #121115; --m-muted: #58555f; --m-paper: #fffefa;
+    --m-line: #121115; --m-spot: #cc2a17; --m-pad: 0; --m-gap: 0;
+  }
+  /* The page is a panel grid: black gutters, uneven weights, one tilted koma. */
+  .tantei .koma-grid { display: grid; gap: 5px; background: var(--m-ink); padding: 5px; flex: 1; }
+  .tantei .home-grid { grid-template-columns: 1.45fr 1fr; grid-template-rows: auto 1fr auto; }
+  .tantei .koma { background: var(--m-paper); padding: 12px 13px; position: relative; overflow: hidden; }
+  .tantei .span2 { grid-column: 1 / -1; }
+  .tantei .m-logo { font-weight: 800; font-size: 13px; letter-spacing: -0.04em; display: flex; align-items: baseline; gap: 6px; }
+  .tantei .m-logo .jp { font-size: 9px; font-weight: 500; color: var(--m-spot); letter-spacing: 0; }
+  .tantei .m-navlinks { display: flex; gap: 10px; font-size: 9px; color: var(--m-muted); }
+  .tantei .headline { font-size: 26px; font-weight: 800; line-height: 1.02; letter-spacing: -0.045em; }
+  .tantei .headline em { font-style: normal; color: var(--m-spot); }
+  .tantei .sub { font-size: 10px; color: var(--m-muted); line-height: 1.5; margin-top: 8px; }
+  .tantei .stamp {
+    position: absolute; right: 10px; bottom: 9px; transform: rotate(-11deg);
+    border: 2px solid var(--m-spot); color: var(--m-spot); border-radius: 4px;
+    padding: 3px 7px; font-size: 9px; font-weight: 800; letter-spacing: .06em; opacity: .92;
+  }
+  .tantei .intake {
+    border: 2px dashed var(--m-ink); padding: 14px 11px; text-align: center;
+    display: flex; flex-direction: column; gap: 5px; align-items: center;
+  }
+  .tantei .intake b { font-size: 12px; letter-spacing: -0.02em; }
+  /* :not(.btn) — a bare `span` here outranks `.btn` and would grey out the label. */
+  .tantei .intake > span:not(.btn) { font-size: 8.5px; color: var(--m-muted); }
+  .tantei .btn {
+    background: var(--m-ink); color: var(--m-paper); font-size: 9.5px; font-weight: 700;
+    padding: 6px 12px; display: inline-block; letter-spacing: .02em;
+  }
+  .tantei .btn.spot { background: var(--m-spot); }
+  .tantei .evidence { display: grid; gap: 5px; grid-template-columns: 1fr 1fr; }
+  .tantei .ev {
+    background: var(--m-paper); border: 2px solid var(--m-ink); padding: 8px 9px;
+    position: relative; overflow: hidden;
+  }
+  .tantei .ev-label { font-size: 8px; letter-spacing: .09em; text-transform: uppercase; color: var(--m-muted); }
+  .tantei .ev-value { font-size: 11.5px; font-weight: 700; margin-top: 2px; letter-spacing: -0.02em; }
+  .tantei .ev-jp { font-size: 8.5px; color: var(--m-spot); margin-top: 1px; }
+  .tantei .ev.void { background: var(--m-ink); color: var(--m-paper); border-color: var(--m-ink); }
+  .tantei .ev.void .ev-label { color: #9a969f; }
+  .tantei .ev.void .ev-jp { color: #e0725f; }
+  .tantei .verdict { font-size: 19px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; }
+
+  /* ---------------- B - YONKOMA ---------------- */
+  .yonkoma {
+    --m-bg: #fffdf6; --m-ink: #201d26; --m-muted: #6b6672; --m-line: #201d26;
+    --m-mint: #22b491; --m-mint-ink: #0b7a5e; --m-coral: #ff6478; --m-coral-ink: #d92d4a;
+    --m-shout: #d92d4a; --m-sky: #4d9de0; --m-cream: #fff8e4;
+    --m-pad: 13px; --m-gap: 9px;
+  }
+  .yonkoma .m-top { display: flex; align-items: center; justify-content: space-between; }
+  .yonkoma .m-logo { font-weight: 800; font-size: 13.5px; letter-spacing: -0.045em; }
+  .yonkoma .m-logo i { font-style: normal; color: var(--m-mint-ink); }
+  .yonkoma .m-cta {
+    background: var(--m-ink); color: #fff; font-size: 9px; font-weight: 700;
+    padding: 5px 11px; border-radius: 999px;
+  }
+  .yonkoma .strip { display: grid; gap: 7px; flex: 1; }
+  .yonkoma .panel {
+    border: 2.5px solid var(--m-line); border-radius: 9px; padding: 9px 11px;
+    display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden; background: #fff;
+  }
+  .yonkoma .panel .num {
+    position: absolute; top: 4px; left: 6px; font-size: 8px; font-weight: 800; color: #767085;
+  }
+  .yonkoma .cap { font-size: 10px; line-height: 1.45; }
+  .yonkoma .cap b { font-weight: 800; }
+
+  /* The mascot: the file itself, personified. */
+  .fella { width: 34px; height: 40px; flex: none; position: relative; }
+  .fella .body {
+    position: absolute; inset: 0; background: #fff; border: 2.5px solid var(--m-ink); border-radius: 5px;
+  }
+  .fella .body::after { /* dog-ear corner */
+    content: ""; position: absolute; top: -2px; right: -2px; width: 11px; height: 11px;
+    background: var(--m-cream); border-left: 2.5px solid var(--m-ink); border-bottom: 2.5px solid var(--m-ink);
+  }
+  .fella .eye {
+    position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--m-ink); top: 18px;
+  }
+  .fella .eye.l { left: 8px; } .fella .eye.r { left: 19px; }
+  .fella .mouth {
+    position: absolute; top: 26px; left: 12px; width: 9px; height: 5px;
+    border-bottom: 2px solid var(--m-ink); border-radius: 0 0 9px 9px;
+  }
+  .fella.worried .mouth { border-bottom: 0; border-top: 2px solid var(--m-ink); border-radius: 9px 9px 0 0; top: 28px; }
+  .fella .sweat {
+    position: absolute; top: 12px; right: -6px; width: 7px; height: 10px; background: var(--m-sky);
+    border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; transform: rotate(14deg);
+  }
+  .fella .sparkle { position: absolute; font-size: 11px; top: -4px; right: -8px; color: var(--m-mint-ink); font-weight: 800; }
+
+  .yonkoma .balloon {
+    position: relative; background: #fff; border: 2.5px solid var(--m-ink);
+    border-radius: 12px; padding: 7px 10px; font-size: 10px; line-height: 1.4;
+  }
+  .yonkoma .balloon::after {
+    content: ""; position: absolute; left: 16px; bottom: -8px; width: 11px; height: 11px;
+    background: #fff; border-right: 2.5px solid var(--m-ink); border-bottom: 2.5px solid var(--m-ink);
+    transform: rotate(45deg) skew(6deg, 6deg);
+  }
+  /* A shout balloon: jagged edge, for the finding that matters most. */
+  .yonkoma .balloon.shout {
+    background: var(--m-shout); color: #fff; border: 0; border-radius: 0; font-weight: 700;
+    clip-path: polygon(0% 12%, 5% 0%, 22% 9%, 38% 1%, 55% 10%, 72% 2%, 88% 10%, 100% 4%,
+      97% 24%, 100% 46%, 96% 66%, 100% 88%, 84% 92%, 68% 100%, 50% 92%, 32% 100%, 16% 91%, 3% 97%,
+      0% 74%, 4% 50%, 0% 30%);
+    padding: 15px 22px;
+  }
+  .yonkoma .balloon.shout::after { display: none; }
+  .yonkoma .balloon.wobble {
+    border-style: dashed; color: var(--m-muted); background: #fbfaf8;
+  }
+  .yonkoma .balloon.wobble::after { background: #fbfaf8; border-style: dashed; }
+  .yonkoma .fx {
+    font-family: var(--jp); font-weight: 800; color: var(--m-coral-ink); font-size: 15px;
+    transform: rotate(-7deg); display: inline-block; letter-spacing: .04em;
+  }
+  .yonkoma .drop {
+    border: 2.5px dashed var(--m-ink); border-radius: 12px; padding: 13px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--m-cream);
+  }
+  .yonkoma .drop b { font-size: 12px; }
+  .yonkoma .drop > span:not(.btn) { font-size: 8.5px; color: var(--m-muted); }
+  .yonkoma .btn {
+    background: var(--m-mint); color: #05271f; font-size: 10px; font-weight: 800;
+    padding: 7px 15px; border-radius: 999px; border: 2.5px solid var(--m-ink);
+  }
+  .yonkoma .rowlist { display: grid; gap: 6px; }
+  /* Findings are not spoken by anyone, so they get no tail. */
+  .yonkoma .rowlist .balloon::after { display: none; }
+
+  /* ---------------- C - SHUCHUSEN ---------------- */
+  .shuchusen {
+    --m-bg: #ffffff; --m-ink: #0c0c11; --m-muted: #5e5e6b; --m-line: #0c0c11;
+    --m-volt: #0038ff; --m-heat: #e01e0d; --m-flat: #6b6b78;
+    --m-pad: 14px; --m-gap: 11px;
+  }
+  .shuchusen .burst { position: absolute; inset: -30% -10%; pointer-events: none; }
+  .shuchusen .burst::before {
+    content: ""; position: absolute; inset: 0;
+    background: repeating-conic-gradient(from 0deg at 50% 50%,
+      var(--m-ink) 0deg 1.1deg, transparent 1.1deg 4.4deg);
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 26%, #000 66%);
+    mask-image: radial-gradient(circle at 50% 50%, transparent 26%, #000 66%);
+    opacity: .16;
+  }
+  .shuchusen .m-top { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }
+  .shuchusen .m-logo {
+    font-weight: 900; font-size: 14px; letter-spacing: -0.06em; font-style: italic;
+  }
+  .shuchusen .m-logo i { font-style: normal; color: var(--m-volt); }
+  .shuchusen .m-navlinks { display: flex; gap: 10px; font-size: 9px; font-weight: 600; color: var(--m-muted); }
+  .shuchusen .hero { position: relative; z-index: 2; text-align: center; padding: 6px 0 2px; }
+  .shuchusen .kicker {
+    font-family: var(--jp); font-size: 10px; font-weight: 700; color: var(--m-heat); letter-spacing: .22em;
+  }
+  .shuchusen .impact {
+    font-size: 31px; font-weight: 900; line-height: .94; letter-spacing: -0.06em;
+    font-style: italic; margin-top: 4px;
+    -webkit-text-stroke: 3px var(--m-ink); paint-order: stroke fill; color: #fff;
+  }
+  .shuchusen .impact .volt { color: var(--m-volt); }
+  .shuchusen .sub { font-size: 10px; color: var(--m-muted); margin-top: 8px; line-height: 1.5; }
+  .shuchusen .slab {
+    position: relative; z-index: 2; border: 3px solid var(--m-ink); background: #fff;
+    padding: 13px; text-align: center; display: flex; flex-direction: column; gap: 6px; align-items: center;
+    box-shadow: 5px 5px 0 var(--m-ink);
+  }
+  .shuchusen .slab b { font-size: 12.5px; font-weight: 800; letter-spacing: -0.03em; }
+  .shuchusen .slab > span:not(.btn) { font-size: 8.5px; color: var(--m-muted); }
+  .shuchusen .btn {
+    background: var(--m-volt); color: #fff; font-size: 10px; font-weight: 800;
+    padding: 7px 15px; border: 2.5px solid var(--m-ink); box-shadow: 3px 3px 0 var(--m-ink);
+    letter-spacing: -0.01em;
+  }
+  .shuchusen .btn.heat { background: var(--m-heat); }
+  .shuchusen .countwrap { position: relative; z-index: 2; text-align: center; padding: 2px 0; }
+  .shuchusen .bignum {
+    font-size: 44px; font-weight: 900; line-height: .88; letter-spacing: -0.07em; font-style: italic;
+    -webkit-text-stroke: 3px var(--m-ink); paint-order: stroke fill; color: var(--m-heat);
+  }
+  .shuchusen .countlabel { font-size: 10px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+  .shuchusen .hits { position: relative; z-index: 2; display: grid; gap: 5px; }
+  .shuchusen .hit {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    border: 2.5px solid var(--m-ink); background: #fff; padding: 6px 9px; box-shadow: 3px 3px 0 var(--m-ink);
+  }
+  .shuchusen .hit b { font-size: 10px; font-weight: 800; letter-spacing: -0.02em; }
+  .shuchusen .hit .tag {
+    font-size: 8.5px; font-weight: 800; padding: 2px 7px; color: #fff; background: var(--m-heat);
+    letter-spacing: .03em;
+  }
+  /* The one panel the energy cannot reach: flat, greyed, no shadow, no lines. */
+  .shuchusen .hit.dead {
+    border-color: var(--m-flat); background: #f2f2f4; box-shadow: none; color: var(--m-flat);
+  }
+  .shuchusen .hit.dead .tag { background: var(--m-flat); }
+  .shuchusen .fx {
+    font-family: var(--jp); font-weight: 900; font-size: 13px; color: var(--m-ink);
+    transform: rotate(-6deg) skewX(-8deg); display: inline-block;
+  }
+
+  /* ---------- notes ---------- */
+  .notes { margin-top: 30px; display: grid; gap: 20px; }
+  @media (min-width: 780px) { .notes { grid-template-columns: 1fr 1fr; gap: 28px; } }
+  .note h4 { font-size: 12.5px; font-weight: 700; letter-spacing: 0; }
+  .note ul { margin: 9px 0 0; padding-left: 17px; display: grid; gap: 6px; }
+  .note li { font-size: 13.5px; color: var(--f-muted); }
+  .note li b { color: var(--f-text); font-weight: 600; }
+
+  /* ---------- comparison + recommendation ---------- */
+  .compare { padding: 60px 0; border-bottom: 1px solid var(--f-line); }
+  .tablescroll { overflow-x: auto; margin-top: 24px; }
+  table { border-collapse: collapse; width: 100%; min-width: 660px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--f-line-soft); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--f-faint); font-weight: 500; border-bottom: 2px solid var(--f-text);
+  }
+  tbody th { font-weight: 600; color: var(--f-text); width: 176px; }
+  td { color: var(--f-muted); }
+
+  .rec { padding: 60px 0 78px; }
+  .rec-card { margin-top: 22px; background: var(--f-surface); border: 2px solid var(--f-text); padding: 26px 26px 28px; }
+  .rec-card h3 { font-size: 18px; font-weight: 700; }
+  .rec-card p { margin-top: 11px; font-size: 14.5px; color: var(--f-muted); max-width: 68ch; }
+  .rec-card p + p { margin-top: 12px; }
+  .rec-tag {
+    display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: #fff; background: var(--f-accent); padding: 3px 9px; margin-bottom: 6px;
+  }
+  .next { margin-top: 26px; display: grid; gap: 9px; padding-left: 0; list-style: none; }
+  .next li { font-size: 14px; color: var(--f-muted); }
+  .next b { color: var(--f-text); font-weight: 600; }
+
+  .caution { margin-top: 30px; border-left: 3px solid var(--f-accent); padding: 2px 0 2px 16px; }
+  .caution h4 { font-size: 13px; font-weight: 700; }
+  .caution p { margin-top: 7px; font-size: 13.5px; color: var(--f-muted); max-width: 66ch; }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">NoWatermark.fyi &middot; round two</p>
+    <h1>Three manga directions</h1>
+    <p class="lede">
+      Manga is built on exactly the thing this product does: panels that reveal information in a
+      controlled order, and screentone that hides detail in plain sight until you look closely.
+      Each direction below takes a different register &mdash; investigation, comedy, impact &mdash;
+      and each still has to survive the same test as the last round: how it handles the moment the
+      product admits it cannot measure something.
+    </p>
+
+    <dl class="brieflist">
+      <div class="brief"><dt>Register</dt><dd>Serious &rarr; playful &rarr; loud</dd></div>
+      <div class="brief"><dt>Japanese text</dt><dd>Accurate, sparing, never load-bearing</dd></div>
+      <div class="brief"><dt>Screens</dt><dd>Homepage and tool results, per direction</dd></div>
+      <div class="brief"><dt>Drawn in</dt><dd>Pure CSS &mdash; tone, koma and focus lines</dd></div>
+    </dl>
+  </div>
+</header>
+
+<!-- ============================ A &#xB7; TANTEI ============================ -->
+<section class="direction">
+  <div class="wrap">
+    <div class="dir-head">
+      <div>
+        <h2 class="dir-name">
+          <span class="romaji">Tantei</span>
+          <span class="kanji jp">&#x63A2;&#x5075;</span>
+          <span class="gloss">detective</span>
+          <span class="swatchrow" aria-hidden="true">
+            <span class="swatch" style="background:#f5f3ec"></span>
+            <span class="swatch" style="background:#121115"></span>
+            <span class="swatch" style="background:#cc2a17"></span>
+            <span class="swatch" style="background:#fffefa"></span>
+          </span>
+        </h2>
+        <p class="thesis">
+          Seinen investigation manga. Heavy ink, screentone, and a real
+          <em>koma</em> grid &mdash; black gutters, panels of uneven weight, one tilted off-axis.
+          Your file is the subject of an inquiry and each finding is an evidence panel. The register
+          is serious, not cute: this is the direction that could still carry a methodology page.
+        </p>
+      </div>
+      <dl class="specs">
+        <div class="spec"><dt>Ground</dt><dd><b>#F5F3EC</b> newsprint, with true black gutters</dd></div>
+        <div class="spec"><dt>Spot</dt><dd><b>#CC2A17</b> &mdash; a <em>hanko</em> seal red, used once per panel</dd></div>
+        <div class="spec"><dt>Texture</dt><dd>CSS screentone, masked diagonally like a tone sheet</dd></div>
+        <div class="spec"><dt>Type</dt><dd>Heavy tight sans; Japanese only as a small subtitle</dd></div>
+        <div class="spec"><dt>The limit</dt><dd>An <b>inked-out panel</b> &mdash; evidence that does not exist</dd></div>
+      </dl>
+    </div>
+
+    <div class="screens">
+      <div class="screen">
+        <p class="screen-label">Homepage</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi</span></div>
+          <div class="mock tantei">
+            <div class="koma-grid home-grid">
+              <div class="koma span2" style="display:flex; align-items:center; justify-content:space-between; padding:9px 13px">
+                <span class="m-logo">NoWatermark<span class="jp">&#x63A2;&#x5075;</span></span>
+                <span class="m-navlinks"><span>Tools</span><span>Guides</span><span>Methodology</span></span>
+              </div>
+
+              <div class="koma" style="display:flex; flex-direction:column; justify-content:center">
+                <span class="tone" style="color:#121115; opacity:.1"></span>
+                <h3 class="headline" style="position:relative">Every file<br>is <em>hiding</em><br>something.</h3>
+                <p class="sub" style="position:relative">
+                  Location. Device. The tool that made it. We open the file and show you what is
+                  actually in there.
+                </p>
+              </div>
+
+              <div class="koma" style="display:flex; flex-direction:column; justify-content:center; gap:9px">
+                <div class="intake">
+                  <b>Submit evidence</b>
+                  <span>JPG &middot; PNG &middot; WebP</span>
+                  <span class="btn spot" style="margin-top:3px">Open the file</span>
+                </div>
+                <p class="sub" style="margin:0; text-align:center">Nothing leaves this device.</p>
+                <span class="stamp jp">&#x672A;&#x958B;&#x5C01;</span>
+              </div>
+
+              <div class="koma span2" style="display:flex; align-items:center; justify-content:space-between; padding:8px 13px">
+                <span style="font-size:9px; color:#58555f">Case files &rarr;</span>
+                <span style="font-size:9px; font-weight:700">C2PA &middot; SynthID &middot; EXIF &middot; Content Credentials</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <p class="screen-label">Tool page &mdash; results</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi/exif-remover</span></div>
+          <div class="mock tantei">
+            <div class="koma-grid" style="grid-template-rows:auto auto 1fr auto">
+              <div class="koma" style="padding:10px 13px">
+                <span class="ev-label">Case file</span>
+                <div class="verdict" style="margin-top:3px">IMG_4417.jpg<br>gave up 12 signals.</div>
+              </div>
+
+              <div class="koma" style="padding:9px 10px">
+                <div class="evidence">
+                  <div class="ev">
+                    <span class="tone" style="color:#cc2a17; opacity:.1"></span>
+                    <div class="ev-label">Location</div>
+                    <div class="ev-value">51.507&deg;N 0.128&deg;W</div>
+                    <div class="ev-jp jp">&#x691C;&#x51FA;</div>
+                  </div>
+                  <div class="ev">
+                    <div class="ev-label">Made with</div>
+                    <div class="ev-value">OpenAI &middot; C2PA</div>
+                    <div class="ev-jp jp">&#x691C;&#x51FA;</div>
+                  </div>
+                  <div class="ev">
+                    <div class="ev-label">Device</div>
+                    <div class="ev-value">iPhone 15 Pro</div>
+                    <div class="ev-jp jp">&#x691C;&#x51FA;</div>
+                  </div>
+                  <div class="ev void">
+                    <div class="ev-label">SynthID</div>
+                    <div class="ev-value">No evidence<br>either way</div>
+                    <div class="ev-jp jp">&#x78BA;&#x8A8D;&#x3067;&#x304D;&#x307E;&#x305B;&#x3093;</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="koma" style="display:flex; align-items:center; gap:10px">
+                <span class="tone" style="color:#121115; opacity:.08"></span>
+                <p class="sub" style="margin:0; position:relative">
+                  Eleven of these can be removed, and we will prove it by re-opening the cleaned
+                  file in front of you. The twelfth we cannot even look at.
+                </p>
+              </div>
+
+              <div class="koma" style="display:flex; align-items:center; justify-content:space-between; padding:9px 13px">
+                <span class="btn">Remove 11 signals</span>
+                <span style="font-size:8.5px; color:#58555f">Original untouched</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <h4>What it gets right</h4>
+        <ul>
+          <li><b>The koma grid is genuine information design.</b> Panel size encodes importance, so the layout does work rather than decoration.</li>
+          <li><b>The inked-out panel is the best answer yet to the honest limit.</b> A black panel with no evidence in it reads instantly as "nothing here to show you" &mdash; not as a failure.</li>
+          <li><b>Survives long-form.</b> Of the three, this is the only one that could still carry nine guides and a methodology page without exhausting the reader.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h4>What it costs</h4>
+        <ul>
+          <li><b>Investigation framing cuts close to the surveillance mood</b> the brand rules avoid &mdash; the copy has to stay helpful, not paranoid.</li>
+          <li><b>Black gutters eat space</b> on small screens; the grid needs a real mobile collapse, not a scale-down.</li>
+          <li><b>Least quirky of the three.</b> If quirk is the point, this is the conservative pick.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ B &#xB7; YONKOMA ============================ -->
+<section class="direction">
+  <div class="wrap">
+    <div class="dir-head">
+      <div>
+        <h2 class="dir-name">
+          <span class="romaji">Yonkoma</span>
+          <span class="kanji jp">&#x56DB;&#x30B3;&#x30DE;</span>
+          <span class="gloss">four-panel gag strip</span>
+          <span class="swatchrow" aria-hidden="true">
+            <span class="swatch" style="background:#fffdf6"></span>
+            <span class="swatch" style="background:#201d26"></span>
+            <span class="swatch" style="background:#22b491"></span>
+            <span class="swatch" style="background:#ff6478"></span>
+            <span class="swatch" style="background:#4d9de0"></span>
+          </span>
+        </h2>
+        <p class="thesis">
+          The four-panel newspaper gag strip, which has a fixed rhythm:
+          setup, development, turn, punchline. The homepage <em>is</em> the strip &mdash; it explains
+          the entire product in four beats without a paragraph of marketing. The mascot is the file
+          itself, and it is keeping secrets badly.
+        </p>
+      </div>
+      <dl class="specs">
+        <div class="spec"><dt>Ground</dt><dd><b>#FFFDF6</b> paper, panels floating in it</dd></div>
+        <div class="spec"><dt>Pops</dt><dd><b>#22B491</b> mint safe &middot; <b>#FF6478</b> coral alarm &middot; <b>#4D9DE0</b> sweat</dd></div>
+        <div class="spec"><dt>Mascot</dt><dd>A dog-eared file with eyes &mdash; pure CSS, no illustration</dd></div>
+        <div class="spec"><dt>Balloons</dt><dd>Shape carries tone: jagged shout, dashed uncertain</dd></div>
+        <div class="spec"><dt>The limit</dt><dd>A <b>dashed wobbling balloon</b> and a sweat drop</dd></div>
+      </dl>
+    </div>
+
+    <div class="screens">
+      <div class="screen">
+        <p class="screen-label">Homepage &mdash; the strip</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi</span></div>
+          <div class="mock yonkoma">
+            <div class="m-top">
+              <span class="m-logo">No<i>Water</i>mark</span>
+              <span class="m-cta">Check a file</span>
+            </div>
+
+            <div class="strip">
+              <div class="panel">
+                <span class="num">1</span>
+                <span class="fella"><span class="body"></span><span class="eye l"></span><span class="eye r"></span><span class="mouth"></span></span>
+                <p class="cap">You send a photo to a friend. <b>Just a photo.</b></p>
+              </div>
+
+              <div class="panel" style="border-color:#ff6478">
+                <span class="num">2</span>
+                <span class="fella worried">
+                  <span class="body"></span><span class="eye l"></span><span class="eye r"></span>
+                  <span class="mouth"></span><span class="sweat"></span>
+                </span>
+                <p class="cap">
+                  It is also carrying <b>where you were</b>, your phone model, and the app that made
+                  it. <span class="fx jp">&#x30D0;&#x30EC;&#x305F;</span>
+                </p>
+              </div>
+
+              <div class="panel">
+                <span class="num">3</span>
+                <span class="fella"><span class="body"></span><span class="eye l"></span><span class="eye r"></span><span class="mouth"></span></span>
+                <p class="cap">Drop it here. We read it <b>on your device</b> &mdash; it never gets uploaded.</p>
+              </div>
+
+              <div class="panel" style="border-color:#22b491; background:#f4fdfa">
+                <span class="num">4</span>
+                <span class="fella">
+                  <span class="body"></span><span class="eye l"></span><span class="eye r"></span>
+                  <span class="mouth"></span><span class="sparkle">&#x2727;</span>
+                </span>
+                <p class="cap"><b>Clean.</b> Same picture, none of the receipts. <span class="fx jp" style="color:#0b7a5e">&#x304D;&#x308C;&#x3044;</span></p>
+              </div>
+            </div>
+
+            <div class="drop">
+              <b>Drop a photo here</b>
+              <span class="btn">Choose a photo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <p class="screen-label">Tool page &mdash; results</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi/exif-remover</span></div>
+          <div class="mock yonkoma">
+            <div class="m-top">
+              <span class="m-logo">No<i>Water</i>mark</span>
+              <span style="font-size:9px; color:#6b6672">IMG_4417.jpg</span>
+            </div>
+
+            <div style="display:flex; align-items:flex-end; gap:11px">
+              <span class="fella worried" style="flex:none">
+                <span class="body"></span><span class="eye l"></span><span class="eye r"></span>
+                <span class="mouth"></span><span class="sweat"></span>
+              </span>
+              <div class="balloon shout" style="flex:1">
+                I was telling everyone<br>where you live!
+              </div>
+            </div>
+
+            <div class="rowlist">
+              <div class="balloon">
+                <b>Your location</b> &mdash; 51.507&deg; N, 0.128&deg; W
+              </div>
+              <div class="balloon">
+                <b>Your phone</b> &mdash; iPhone 15 Pro, and the app that edited it
+              </div>
+              <div class="balloon">
+                <b>When it was taken</b> &mdash; 13 August 2026, 10:30
+              </div>
+              <div class="balloon wobble">
+                <b>Google&rsquo;s invisible watermark</b> &mdash; we genuinely cannot check this one.
+                <span class="jp" style="font-size:9px">&#x308F;&#x304B;&#x3089;&#x306A;&#x3044;</span>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px">
+              <span class="fella" style="flex:none; transform:scale(.8)">
+                <span class="body"></span><span class="eye l"></span><span class="eye r"></span>
+                <span class="mouth"></span><span class="sparkle">&#x2727;</span>
+              </span>
+              <p class="cap" style="margin:0">
+                Your picture comes out <b>pixel for pixel identical</b> &mdash; only the receipts go.
+              </p>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:9px; margin-top:2px">
+              <span class="btn">Clean it up</span>
+              <span style="font-size:8.5px; color:#6b6672">11 of 12 &middot; nothing uploaded</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <h4>What it gets right</h4>
+        <ul>
+          <li><b>The strip does the explaining.</b> Four panels convey the product faster than any hero paragraph, and it is the format people already know how to read.</li>
+          <li><b>Balloon shape encodes certainty.</b> A jagged shout for a confirmed finding, a dashed wobble for the one we cannot check &mdash; the honesty is carried by form, not by a caveat nobody reads.</li>
+          <li><b>Unmistakably not a scam site.</b> Nobody running a shady converter builds a mascot; the warmth is itself a trust signal.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h4>What it costs</h4>
+        <ul>
+          <li><b>Hardest to keep serious.</b> A privacy tool that jokes about your location leaking has to land the tone exactly, or it reads as making light of the risk.</li>
+          <li><b>The mascot needs a real illustrator</b> eventually. CSS gets you this far; it will not carry a whole brand.</li>
+          <li><b>Weakest for the technical audience</b> who links to you &mdash; needs the detailed readout kept somewhere behind it.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ C &#xB7; SHUCHUSEN ============================ -->
+<section class="direction">
+  <div class="wrap">
+    <div class="dir-head">
+      <div>
+        <h2 class="dir-name">
+          <span class="romaji">Sh&#x016B;ch&#x016B;sen</span>
+          <span class="kanji jp">&#x96C6;&#x4E2D;&#x7DDA;</span>
+          <span class="gloss">concentration lines</span>
+          <span class="swatchrow" aria-hidden="true">
+            <span class="swatch" style="background:#ffffff"></span>
+            <span class="swatch" style="background:#0c0c11"></span>
+            <span class="swatch" style="background:#0038ff"></span>
+            <span class="swatch" style="background:#ff2a17"></span>
+            <span class="swatch" style="background:#8e8e9a"></span>
+          </span>
+        </h2>
+        <p class="thesis">
+          Sh&#x014D;nen impact. Focus lines converge on the moment of revelation, the signal count
+          lands like a hit, and everything carries a hard offset shadow. The conceptual move is in
+          what <em>doesn&rsquo;t</em> get the treatment: the unverifiable row is deliberately flat,
+          grey and shadowless &mdash; the one thing all that energy cannot touch.
+        </p>
+      </div>
+      <dl class="specs">
+        <div class="spec"><dt>Ground</dt><dd><b>#FFFFFF</b> &mdash; pure page, black does the work</dd></div>
+        <div class="spec"><dt>Charge</dt><dd><b>#0038FF</b> action &middot; <b>#FF2A17</b> alarm &middot; <b>#8E8E9A</b> dead air</dd></div>
+        <div class="spec"><dt>Lines</dt><dd>CSS <code>repeating-conic-gradient</code>, radially masked</dd></div>
+        <div class="spec"><dt>Type</dt><dd>Heavy italic with a stroke outline, <code>paint-order</code> set</dd></div>
+        <div class="spec"><dt>The limit</dt><dd><b>The panel with no shadow</b> and no lines behind it</dd></div>
+      </dl>
+    </div>
+
+    <div class="screens">
+      <div class="screen">
+        <p class="screen-label">Homepage</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi</span></div>
+          <div class="mock shuchusen">
+            <span class="burst" style="top:-46%"></span>
+            <div class="m-top">
+              <span class="m-logo">NO<i>WATERMARK</i></span>
+              <span class="m-navlinks"><span>TOOLS</span><span>GUIDES</span><span>METHOD</span></span>
+            </div>
+
+            <div class="hero">
+              <span class="kicker jp">&#x30B9;&#x30AD;&#x30E3;&#x30F3;</span>
+              <h3 class="impact">WHAT IS<br><span class="volt">HIDING</span><br>IN THERE?</h3>
+              <p class="sub">
+                Drop an image. See every trace of where it came from &mdash;<br>location, device,
+                the AI that made it.
+              </p>
+            </div>
+
+            <div class="slab">
+              <b>DROP A FILE</b>
+              <span>JPG &middot; PNG &middot; WebP &mdash; read on your device, never uploaded</span>
+              <span class="btn" style="margin-top:3px">CHOOSE A FILE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <p class="screen-label">Tool page &mdash; results</p>
+        <div class="frame">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="urlbar">nowatermark.fyi/ai-watermark-checker</span></div>
+          <div class="mock shuchusen">
+            <span class="burst" style="top:-24%"></span>
+            <div class="m-top">
+              <span class="m-logo">NO<i>WATERMARK</i></span>
+              <span style="font-size:9px; font-weight:700; color:#5e5e6b">IMG_4417.jpg</span>
+            </div>
+
+            <div class="countwrap">
+              <span class="fx jp" style="color:#e01e0d">&#x30C9;&#x30F3;</span>
+              <div class="bignum">12</div>
+              <div class="countlabel">signals found</div>
+            </div>
+
+            <div class="hits">
+              <div class="hit">
+                <b>LOCATION &mdash; 51.507&deg;N</b>
+                <span class="tag">FOUND</span>
+              </div>
+              <div class="hit">
+                <b>C2PA &mdash; OpenAI</b>
+                <span class="tag">FOUND</span>
+              </div>
+              <div class="hit">
+                <b>DEVICE &mdash; iPhone 15 Pro</b>
+                <span class="tag">FOUND</span>
+              </div>
+              <div class="hit dead">
+                <b>SYNTHID</b>
+                <span class="tag">CAN&rsquo;T CHECK</span>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:9px; position:relative; z-index:2">
+              <span class="btn heat">STRIP 11 SIGNALS</span>
+              <span style="font-size:8.5px; font-weight:600; color:#5e5e6b; white-space:nowrap">Verified by re-scan</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <h4>What it gets right</h4>
+        <ul>
+          <li><b>The best idea across all six directions.</b> Denying the unverifiable row the visual treatment everything else gets says "we cannot reach this" without a single word of copy.</li>
+          <li><b>The result count becomes the hero moment</b>, which is exactly the beat that makes someone share a screenshot of your tool.</li>
+          <li><b>Cheapest to build well.</b> Focus lines and offset shadows are a few lines of CSS, and it stays sharp at any screen size.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h4>What it costs</h4>
+        <ul>
+          <li><b>Shouting is exhausting past the first screen.</b> The guides would need a much calmer sibling treatment, which is effectively a second design.</li>
+          <li><b>High energy plus "watermark remover" risks the illicit read</b> &mdash; the exact positioning the brand rules rule out.</li>
+          <li><b>Outlined italic display type is fragile</b> in translation and at small sizes.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COMPARISON ============================ -->
+<section class="compare">
+  <div class="wrap">
+    <p class="eyebrow">Side by side</p>
+    <h2 style="font-size:26px; font-weight:700; margin-top:9px">Where they differ</h2>
+
+    <div class="tablescroll">
+      <table>
+        <thead>
+          <tr><th scope="col">&nbsp;</th><th scope="col">Tantei</th><th scope="col">Yonkoma</th><th scope="col">Sh&#x016B;ch&#x016B;sen</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Register</th>
+            <td>Serious, investigative</td>
+            <td>Warm, funny</td>
+            <td>Loud, kinetic</td>
+          </tr>
+          <tr>
+            <th scope="row">Manga device used</th>
+            <td>Koma grid and screentone</td>
+            <td>Four-beat strip and balloons</td>
+            <td>Focus lines and impact type</td>
+          </tr>
+          <tr>
+            <th scope="row">How it shows the limit</th>
+            <td>An inked-out panel</td>
+            <td>A dashed, wobbling balloon</td>
+            <td>The one panel with no shadow</td>
+          </tr>
+          <tr>
+            <th scope="row">Carries nine long guides</th>
+            <td>Yes &mdash; built for reading</td>
+            <td>Awkwardly</td>
+            <td>No &mdash; needs a calm sibling</td>
+          </tr>
+          <tr>
+            <th scope="row">Explains itself without copy</th>
+            <td>Partly</td>
+            <td>Completely &mdash; the strip is the pitch</td>
+            <td>Partly</td>
+          </tr>
+          <tr>
+            <th scope="row">Risk it runs</th>
+            <td>Feels surveillance-y</td>
+            <td>Feels unserious about a real risk</td>
+            <td>Feels illicit</td>
+          </tr>
+          <tr>
+            <th scope="row">Needs an illustrator</th>
+            <td>No</td>
+            <td>Eventually, yes</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <th scope="row">Quirk level</th>
+            <td>Low</td>
+            <td>High</td>
+            <td>Medium-high</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="caution">
+      <h4>One thing to decide deliberately, whichever you pick</h4>
+      <p>
+        The Japanese here is accurate and deliberately never load-bearing &mdash; every Japanese
+        string sits next to English that carries the same meaning. Keep that rule. It matters for
+        three practical reasons: readers without a CJK font installed see empty boxes, screen
+        readers will announce Japanese in an English page unless each run is tagged
+        <code>lang="ja"</code>, and search engines index an English page. Treat it as ornament with
+        a translation attached, never as the only place a meaning lives.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RECOMMENDATION ============================ -->
+<section class="rec">
+  <div class="wrap">
+    <p class="eyebrow">Recommendation</p>
+    <div class="rec-card">
+      <span class="rec-tag">Tantei, with Sh&#x016B;ch&#x016B;sen&rsquo;s dead panel</span>
+      <h3>Take the serious one, and steal the best idea from the loud one</h3>
+      <p>
+        Tantei is the only one of the three that can be the whole site. It reads as manga
+        immediately &mdash; the koma grid, the black gutters, the tone &mdash; but it stays legible
+        across nine long guides and a methodology page, which is where the traffic actually
+        compounds. The investigation framing also fits what the product literally does: opens a
+        file and reports what it finds.
+      </p>
+      <p>
+        Then take one idea from Sh&#x016B;ch&#x016B;sen: <strong>withholding the visual treatment
+        from the thing you cannot measure.</strong> Tantei already does a version of this with the
+        inked-out panel, and it is worth making the rule explicit across the whole design &mdash;
+        confirmed findings get tone, weight and a spot colour; the unverifiable row gets none of
+        them. That is your product principle expressed as a design system rule rather than a
+        disclaimer.
+      </p>
+      <p>
+        Yonkoma I would keep, but not as the site. The four-panel strip is the best explainer you
+        could put on the homepage or at the top of a guide, and the mascot is genuinely good
+        marketing material. Use it as a component inside Tantei rather than as the whole identity.
+      </p>
+
+      <ul class="next">
+        <li><b>Pick one and I will build it</b> across the homepage, all fourteen tool pages, the guides and the results UI, then rerun the browser and offline checks.</li>
+        <li><b>Or take the hybrid</b> &mdash; Tantei&rsquo;s koma frame, the withheld-treatment rule, and Yonkoma&rsquo;s strip as the homepage explainer.</li>
+        <li><b>Or point me at one panel</b> that is closest and I will push that further. Cheaper than another full round.</li>
+      </ul>
+    </div>
+  </div>
+</section>
