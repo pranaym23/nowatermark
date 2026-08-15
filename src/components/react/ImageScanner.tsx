@@ -16,7 +16,7 @@ import { formatBytes } from '../../lib/bytes';
 import { ACCEPTED_MIME, MAX_FILE_BYTES, SLOW_FILE_BYTES } from '../../lib/config';
 import { allSignals, countDetected, type ScanResult } from '../../lib/types';
 import { bucket, formatLabel, track } from '../../lib/analytics';
-import type { SignalCategory } from '../../lib/signals';
+import { CLEAN_PRESETS, presetById, type PresetId, type SignalCategory } from '../../lib/signals';
 import type { CleanPayload } from '../../lib/worker/protocol';
 import { ProcessingFailure, cleanFileBytes, releaseWorker, scanFileBytes } from '../../lib/worker/client';
 import { Button, ExposureSummary, Notice, OutcomePill, ResultGroup, Spinner } from './ui';
@@ -50,6 +50,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [preserveOrientation, setPreserveOrientation] = useState(true);
+  const [preset, setPreset] = useState<PresetId>('everything');
   const [dragging, setDragging] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -146,7 +147,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
       const payload = await cleanFileBytes(
         bytes,
         { name: file.name, type: file.type, size: file.size },
-        { preserveOrientation },
+        { preserveOrientation, blocks: presetById(preset)?.blocks },
       );
       if (run !== runIdRef.current) return;
 
@@ -178,7 +179,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
     }
     // `scan` is read for the format label, so it belongs in the deps — without
     // it the callback would close over a stale result after a second file.
-  }, [file, preserveOrientation, scan]);
+  }, [file, preserveOrientation, preset, scan]);
 
   const onDrop = useCallback(
     (event: React.DragEvent) => {
@@ -208,6 +209,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
     }));
   }, [scan, focus]);
 
+  const activePreset = presetById(preset) ?? CLEAN_PRESETS[0]!;
   const detectedCount = scan ? countDetected(scan) : 0;
   const status = STATUS_TEXT[phase];
 
@@ -348,6 +350,41 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
                 image quality is untouched.
               </p>
             </div>
+
+            {/*
+              Presets (R5). Each says what it drops AND what it deliberately
+              leaves behind, shown before the button is pressed — a "privacy"
+              clean that silently stripped provenance, or a "provenance" clean
+              that left GPS in place without saying so, would both mislead.
+            */}
+            <fieldset className="flex flex-col gap-2">
+              <legend className="nw-panel-label mb-1.5">What should this do?</legend>
+              {CLEAN_PRESETS.map((p) => (
+                <label key={p.id} className="flex items-start gap-2.5 text-sm">
+                  <input
+                    type="radio"
+                    name="clean-preset"
+                    value={p.id}
+                    checked={preset === p.id}
+                    onChange={() => setPreset(p.id)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    {p.label}
+                    <span className="block text-xs" style={{ color: 'var(--nw-text-muted)' }}>
+                      {p.goal}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+
+            <Notice>
+              <p className="text-xs">
+                <span className="font-medium">Before you run it: </span>
+                {activePreset.summary}
+              </p>
+            </Notice>
 
             <label className="flex items-start gap-2.5 text-sm">
               <input

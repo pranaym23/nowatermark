@@ -9,7 +9,7 @@
 import { concat } from '../bytes';
 import { buildOrientationTiff, orientationNeedsPreserving, parseExif } from '../metadata/exif';
 import { classifyJpegSegment, collectJpegMetadata, walkJpeg } from '../metadata/jpeg';
-import type { RawCleanOutcome } from './types';
+import { shouldRemove, type CleanContext, type RawCleanOutcome } from './types';
 
 /** FF E1 <len> "Exif\0\0" <26-byte TIFF> */
 function buildOrientationApp1(orientation: number): Uint8Array {
@@ -26,7 +26,27 @@ function buildOrientationApp1(orientation: number): Uint8Array {
   return out;
 }
 
-export function cleanJpegBytes(b: Uint8Array, preserveOrientation: boolean): RawCleanOutcome {
+/**
+ * Which signal each strippable segment kind belongs to.
+ *
+ * A kind with no entry here has no preset that can spare it: `app-unknown` is
+ * an application segment we could not identify, and keeping an unknown block
+ * because a preset did not name it would quietly leave metadata behind.
+ */
+const KIND_SIGNAL: Readonly<Record<string, string>> = {
+  exif: 'exif',
+  xmp: 'xmp',
+  'xmp-extension': 'xmp',
+  iptc: 'iptc',
+  jumbf: 'c2pa',
+  comment: 'embedded-text',
+};
+
+export function cleanJpegBytes(
+  b: Uint8Array,
+  preserveOrientation: boolean,
+  ctx?: CleanContext,
+): RawCleanOutcome {
   const structure = walkJpeg(b);
   const warnings = [...structure.warnings];
 
@@ -54,7 +74,12 @@ export function cleanJpegBytes(b: Uint8Array, preserveOrientation: boolean): Raw
   for (const seg of structure.segments) {
     if (seg.offset >= structure.scanStart) break;
     const { kind, keep } = classifyJpegSegment(b, seg);
-    if (!keep) continue;
+    if (!keep) {
+      // A preset may spare a block it did not name. Unidentified application
+      // segments have no signal id and are always dropped.
+      const signal = KIND_SIGNAL[kind];
+      if (!(ctx && signal && !shouldRemove(ctx, signal))) continue;
+    }
     if (kind === 'jfif' && kept.length === 0) firstIsJfif = true;
     kept.push(b.subarray(seg.offset, seg.dataEnd));
   }

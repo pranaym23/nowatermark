@@ -10,7 +10,22 @@ import { concat, writeU32be } from '../bytes';
 import { crc32 } from '../crc32';
 import { buildOrientationTiff, orientationNeedsPreserving, parseExif } from '../metadata/exif';
 import { PNG_SIGNATURE, shouldKeepPngChunk, walkPng } from '../metadata/png';
-import type { RawCleanOutcome } from './types';
+import { shouldRemove, type CleanContext, type RawCleanOutcome } from './types';
+
+/**
+ * Which signal each strippable PNG chunk belongs to (V2 R5).
+ *
+ * `dSIG` has no entry: a digital signature over metadata we are about to
+ * change is invalid either way, so keeping it because a preset did not name it
+ * would leave a broken signature in the file.
+ */
+const PNG_CHUNK_SIGNAL: Readonly<Record<string, string>> = {
+  tEXt: 'embedded-text',
+  zTXt: 'embedded-text',
+  iTXt: 'xmp',
+  eXIf: 'exif',
+  caBX: 'c2pa',
+};
 
 function buildChunk(type: string, data: Uint8Array): Uint8Array {
   const out = new Uint8Array(12 + data.length);
@@ -22,7 +37,11 @@ function buildChunk(type: string, data: Uint8Array): Uint8Array {
   return out;
 }
 
-export function cleanPngBytes(b: Uint8Array, preserveOrientation: boolean): RawCleanOutcome {
+export function cleanPngBytes(
+  b: Uint8Array,
+  preserveOrientation: boolean,
+  ctx?: CleanContext,
+): RawCleanOutcome {
   const structure = walkPng(b);
   const warnings = [...structure.warnings];
 
@@ -49,7 +68,11 @@ export function cleanPngBytes(b: Uint8Array, preserveOrientation: boolean): RawC
   let sawIend = false;
 
   for (const chunk of structure.chunks) {
-    if (!shouldKeepPngChunk(chunk.type)) continue;
+    if (!shouldKeepPngChunk(chunk.type)) {
+      // A preset may spare a block it did not name (V2 R5).
+      const signal = PNG_CHUNK_SIGNAL[chunk.type];
+      if (!(ctx && signal && !shouldRemove(ctx, signal))) continue;
+    }
     parts.push(b.subarray(chunk.offset, chunk.totalEnd));
 
     if (chunk.type === 'IHDR') {

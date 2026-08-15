@@ -15,7 +15,14 @@ import {
   shouldKeepWebpChunk,
   walkWebp,
 } from '../metadata/webp';
-import type { RawCleanOutcome } from './types';
+import { shouldRemove, type CleanContext, type RawCleanOutcome } from './types';
+
+/** Which signal each strippable WebP chunk belongs to (V2 R5). */
+const WEBP_CHUNK_SIGNAL: Readonly<Record<string, string>> = {
+  EXIF: 'exif',
+  'XMP ': 'xmp',
+  C2PA: 'c2pa',
+};
 
 function buildWebpChunk(fourcc: string, data: Uint8Array): Uint8Array {
   const padded = data.length % 2 === 1;
@@ -26,7 +33,11 @@ function buildWebpChunk(fourcc: string, data: Uint8Array): Uint8Array {
   return out; // trailing pad byte is already zero
 }
 
-export function cleanWebpBytes(b: Uint8Array, preserveOrientation: boolean): RawCleanOutcome {
+export function cleanWebpBytes(
+  b: Uint8Array,
+  preserveOrientation: boolean,
+  ctx?: CleanContext,
+): RawCleanOutcome {
   const structure = walkWebp(b);
   const warnings = [...structure.warnings];
 
@@ -53,7 +64,11 @@ export function cleanWebpBytes(b: Uint8Array, preserveOrientation: boolean): Raw
   const body: Uint8Array[] = [];
 
   for (const chunk of structure.chunks) {
-    if (!shouldKeepWebpChunk(chunk.fourcc)) continue;
+    if (!shouldKeepWebpChunk(chunk.fourcc)) {
+      // A preset may spare a block it did not name (V2 R5).
+      const signal = WEBP_CHUNK_SIGNAL[chunk.fourcc];
+      if (!(ctx && signal && !shouldRemove(ctx, signal))) continue;
+    }
 
     if (chunk.fourcc === 'VP8X') {
       // Copy the header, then correct the flag bits to match what survives.

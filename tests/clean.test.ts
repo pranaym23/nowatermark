@@ -11,6 +11,7 @@ import {
 } from '../src/lib/metadata/webp';
 import { u32le } from '../src/lib/bytes';
 import { scanImage } from '../src/lib/scan';
+import { CLEAN_PRESETS, presetById, signalById } from '../src/lib/signals';
 import { allSignals } from '../src/lib/types';
 import type { ScanResult } from '../src/lib/types';
 import {
@@ -371,5 +372,112 @@ describe('expected fixture values survive nothing', () => {
 
     expect(haystack).not.toContain(EXPECTED.promptText);
     expect(haystack).not.toContain('parameters');
+  });
+});
+
+/*
+ * Presets (V2 R5).
+ *
+ * The claim a preset makes is not "we removed some things" but "we removed
+ * exactly these and deliberately kept those". The kept half is the half that
+ * can mislead, so it is asserted just as hard as the removed half.
+ */
+describe('cleanup presets', () => {
+  it('privacy-safe drops EXIF and IPTC but keeps the provenance record', async () => {
+    const original = buildJpegFixture();
+    const preset = presetById('privacy-safe')!;
+    const outcome = await cleanImage(
+      original,
+      input('photo.jpg', 'image/jpeg', original.length),
+      { blocks: preset.blocks },
+    );
+
+    expect(outcome.result.success).toBe(true);
+    const after = outcome.after!;
+
+    // Gone: the blocks that carry who and where.
+    expect(statusOf(after, 'gps')).toBe('not_detected');
+    expect(statusOf(after, 'device')).toBe('not_detected');
+    expect(statusOf(after, 'iptc')).toBe('not_detected');
+
+    // Kept, and this is the point: a file that declared itself AI-made still
+    // does. A "privacy" clean that silently stripped provenance would be
+    // making an editorial decision on the user's behalf.
+    expect(statusOf(after, 'c2pa')).toBe('detected');
+  });
+
+  it('provenance-light drops the manifest but leaves camera data alone', async () => {
+    const original = buildJpegFixture();
+    const preset = presetById('provenance-light')!;
+    const outcome = await cleanImage(
+      original,
+      input('photo.jpg', 'image/jpeg', original.length),
+      { blocks: preset.blocks },
+    );
+
+    expect(outcome.result.success).toBe(true);
+    const after = outcome.after!;
+
+    expect(statusOf(after, 'c2pa')).toBe('not_detected');
+    expect(statusOf(after, 'xmp')).toBe('not_detected');
+
+    // Still there — and the preset copy says so, because a user who wanted
+    // their location gone must not think this did it.
+    expect(statusOf(after, 'gps')).toBe('detected');
+  });
+
+  it('omitting blocks still removes everything, as every older caller expects', async () => {
+    const original = buildJpegFixture();
+    const outcome = await cleanImage(original, input('p.jpg', 'image/jpeg', original.length));
+    const after = outcome.after!;
+    expect(statusOf(after, 'c2pa')).toBe('not_detected');
+    expect(statusOf(after, 'gps')).toBe('not_detected');
+  });
+
+  it('reports a block the preset spared as kept, never as a failure', async () => {
+    const original = buildJpegFixture();
+    const preset = presetById('privacy-safe')!;
+    const outcome = await cleanImage(
+      original,
+      input('photo.jpg', 'image/jpeg', original.length),
+      { blocks: preset.blocks },
+    );
+
+    const c2pa = outcome.comparisons.find((c) => c.id === 'c2pa')!;
+
+    // "could not be removed" would be a straight falsehood: nothing was
+    // attempted. It also reads as the tool failing rather than as the choice
+    // the user made.
+    expect(c2pa.outcome).toBe('kept');
+    expect(c2pa.note ?? '').not.toMatch(/could not be removed/i);
+    expect(outcome.result.warnings.join(' ')).not.toMatch(/C2PA.*could not be removed/i);
+  });
+
+  it('presets never name a signal that cannot actually be removed', () => {
+    for (const preset of CLEAN_PRESETS) {
+      for (const id of preset.blocks) {
+        const spec = signalById(id);
+        expect(spec, `${preset.id} names unknown signal ${id}`).toBeDefined();
+        expect(spec!.remove, `${preset.id} claims it removes ${id}, which is not removable`).toBe(
+          true,
+        );
+      }
+    }
+  });
+
+  it('a preset selection does not recompress either', async () => {
+    const original = buildJpegFixture();
+    const preset = presetById('privacy-safe')!;
+    const outcome = await cleanImage(
+      original,
+      input('p.jpg', 'image/jpeg', original.length),
+      { blocks: preset.blocks },
+    );
+    const cleaned = await bytesOf(outcome.result.blob);
+    const scanA = original.subarray(walkJpeg(original).scanStart);
+    const scanB = cleaned.subarray(walkJpeg(cleaned).scanStart);
+
+    expect(scanB.length).toBe(scanA.length);
+    expect(Buffer.from(scanB).equals(Buffer.from(scanA))).toBe(true);
   });
 });

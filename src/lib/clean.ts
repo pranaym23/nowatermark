@@ -78,9 +78,9 @@ export interface CleanOutcome {
  * positional signature; the adapters below are the only thing that knows it.
  */
 const CLEANERS: Record<CleanableNowFormat, Cleaner> = {
-  jpeg: (bytes, ctx) => cleanJpegBytes(bytes, ctx.preserveOrientation),
-  png: (bytes, ctx) => cleanPngBytes(bytes, ctx.preserveOrientation),
-  webp: (bytes, ctx) => cleanWebpBytes(bytes, ctx.preserveOrientation),
+  jpeg: (bytes, ctx) => cleanJpegBytes(bytes, ctx.preserveOrientation, ctx),
+  png: (bytes, ctx) => cleanPngBytes(bytes, ctx.preserveOrientation, ctx),
+  webp: (bytes, ctx) => cleanWebpBytes(bytes, ctx.preserveOrientation, ctx),
   svg: cleanSvgBytes,
   markdown: cleanMarkdownBytes,
 };
@@ -89,13 +89,14 @@ function runCleaner(
   bytes: Uint8Array,
   format: CleanableFormat,
   preserveOrientation: boolean,
+  blocks?: ReadonlySet<string>,
 ): RawCleanOutcome {
   if (!isCleanable(format)) {
     // Scannable but not cleanable — we can say what is in the file but not
     // change it. The caller reports this as a failed clean, original intact.
     return { ok: false, warnings: [] };
   }
-  return CLEANERS[format](bytes, { preserveOrientation });
+  return CLEANERS[format](bytes, { preserveOrientation, blocks });
 }
 
 export function cleanedFilename(original: string, format: CleanableFormat): string {
@@ -107,6 +108,7 @@ function compare(
   before: ScanResult,
   after: ScanResult,
   orientationPreserved: number | undefined,
+  blocks: ReadonlySet<string> | undefined,
 ): SignalComparison[] {
   const afterById = new Map(allSignals(after).map((s) => [s.id, s]));
 
@@ -129,6 +131,15 @@ function compare(
     } else if (spec && !spec.remove) {
       outcome = 'kept';
       note = 'Preserved on purpose';
+    } else if (blocks && !blocks.has(b.id)) {
+      /*
+       * The user's preset did not ask for this block. Reporting it as
+       * "could not be removed" would be a straight falsehood — nothing was
+       * attempted — and it would read as a failure of the tool rather than as
+       * the choice the user actually made.
+       */
+      outcome = 'kept';
+      note = 'Kept — this preset does not remove it';
     } else {
       outcome = 'remaining';
       note = 'This could not be removed from this file.';
@@ -144,11 +155,14 @@ export async function cleanImage(
   options: CleanOptions = {},
 ): Promise<CleanOutcome> {
   const { preserveOrientation } = { ...DEFAULT_CLEAN_OPTIONS, ...options };
+  // Absent means "everything removable" — the historical behaviour, and what
+  // every caller that predates presets expects.
+  const blocks = options.blocks ? new Set(options.blocks) : undefined;
   const before = await scanImage(bytes, input);
   const format = before.file.format!;
   const filename = cleanedFilename(input.name, format);
 
-  const outcome = runCleaner(bytes, format, preserveOrientation);
+  const outcome = runCleaner(bytes, format, preserveOrientation, blocks);
 
   if (!outcome.ok) {
     return {
@@ -176,7 +190,7 @@ export async function cleanImage(
     size: cleanedBytes.length,
   });
 
-  const comparisons = compare(before, after, outcome.orientationPreserved);
+  const comparisons = compare(before, after, outcome.orientationPreserved, blocks);
   const removedSignals = comparisons.filter((c) => c.outcome === 'removed').map((c) => c.id);
   const remainingSignals = comparisons
     .filter((c) => c.outcome === 'remaining' || c.outcome === 'unverifiable' || c.outcome === 'kept')

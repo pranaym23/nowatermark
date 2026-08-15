@@ -25,6 +25,25 @@ export type RawCleanOutcome =
  */
 export interface CleanContext {
   preserveOrientation: boolean;
+  /**
+   * Metadata blocks the caller asked to remove, by signal id (V2 R5).
+   *
+   * `undefined` means "every removable block" — the historical behaviour. A
+   * cleaner that does not understand a block must leave it alone rather than
+   * guess, so the default is expressed as absence rather than as a full set.
+   */
+  blocks?: ReadonlySet<string>;
+}
+
+/**
+ * Should this block be removed?
+ *
+ * Centralised so every cleaner treats "no selection given" identically: an
+ * unset `blocks` means remove everything removable, which is what every
+ * existing caller and test expects.
+ */
+export function shouldRemove(ctx: CleanContext, signalId: string): boolean {
+  return ctx.blocks === undefined || ctx.blocks.has(signalId);
 }
 
 export type Cleaner = (bytes: Uint8Array, ctx: CleanContext) => RawCleanOutcome;

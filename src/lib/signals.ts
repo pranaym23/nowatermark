@@ -315,6 +315,71 @@ export function signalById(id: string): SignalSpec | undefined {
   return SIGNAL_LIST.find((s) => s.id === id);
 }
 
+/**
+ * Cleanup presets (V2 R5).
+ *
+ * A preset is a **goal**, not a switch list: "make this safe to post" rather
+ * than "uncheck IPTC". Each names the metadata blocks it drops.
+ *
+ * The granularity is deliberate and needs saying out loud, because it is the
+ * one place a user could be misled. Cleaners work on whole container blocks —
+ * an entire EXIF segment, an entire XMP packet — not on individual tags inside
+ * them. GPS, camera model and timestamp all live inside EXIF, so there is no
+ * honest way to offer "remove my location but keep my camera settings" without
+ * rewriting the TIFF structure, which we do not do. A preset therefore either
+ * drops a block or keeps it, and `summary` says exactly which.
+ *
+ * `blocks` are the removable metadata containers, keyed by the signal id that
+ * represents each one. A preset can never list a signal whose `remove` is
+ * false — enforced by a test.
+ */
+export type PresetId = 'everything' | 'privacy-safe' | 'provenance-light';
+
+export interface CleanPreset {
+  id: PresetId;
+  label: string;
+  /** One line, imperative, describing the goal rather than the mechanism. */
+  goal: string;
+  /** Exactly what this drops and what it deliberately leaves behind. */
+  summary: string;
+  /** Metadata blocks to remove, by signal id. */
+  blocks: readonly string[];
+}
+
+/** Every removable container block, in the order the UI lists them. */
+export const CLEANABLE_BLOCKS = ['exif', 'iptc', 'xmp', 'c2pa', 'embedded-text'] as const;
+
+export const CLEAN_PRESETS: readonly CleanPreset[] = [
+  {
+    id: 'everything',
+    label: 'Everything removable',
+    goal: 'Strip every metadata block this file carries.',
+    summary:
+      'Removes EXIF, IPTC, XMP, Content Credentials and embedded text records. The colour profile and image data are always preserved, so the picture is unchanged.',
+    blocks: [...CLEANABLE_BLOCKS],
+  },
+  {
+    id: 'privacy-safe',
+    label: 'Privacy-safe',
+    goal: 'Remove what identifies you, your device and where you were.',
+    summary:
+      'Removes EXIF and IPTC — the blocks holding GPS coordinates, camera and phone identifiers, timestamps and authorship. Deliberately keeps Content Credentials, so a file that declares itself AI-made still does.',
+    blocks: ['exif', 'iptc'],
+  },
+  {
+    id: 'provenance-light',
+    label: 'Provenance-light',
+    goal: 'Remove what declares which tool or model made this.',
+    summary:
+      'Removes Content Credentials, XMP and embedded text records, including prompts and workflow data. Deliberately keeps EXIF, so camera settings survive — run Privacy-safe as well if you also want your location gone.',
+    blocks: ['c2pa', 'xmp', 'embedded-text'],
+  },
+];
+
+export function presetById(id: string): CleanPreset | undefined {
+  return CLEAN_PRESETS.find((p) => p.id === id);
+}
+
 /** Signals we can genuinely remove — the basis for every removal claim. */
 export const REMOVABLE_SIGNAL_IDS: readonly string[] = SIGNAL_LIST.filter((s) => s.remove).map(
   (s) => s.id,

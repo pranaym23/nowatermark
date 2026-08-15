@@ -88,9 +88,17 @@ export interface CleanOptions {
    * rotated photos display sideways in most viewers.
    */
   preserveOrientation?: boolean;
+  /**
+   * Which metadata blocks to remove, by signal id (V2 R5).
+   *
+   * Omitted means "every removable block", which is the historical behaviour
+   * and what every existing caller and test expects. A block left out of this
+   * list is copied through untouched.
+   */
+  blocks?: readonly string[];
 }
 
-export const DEFAULT_CLEAN_OPTIONS: Required<CleanOptions> = {
+export const DEFAULT_CLEAN_OPTIONS: Required<Omit<CleanOptions, 'blocks'>> = {
   preserveOrientation: true,
 };
 
