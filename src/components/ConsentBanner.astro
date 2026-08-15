@@ -1,0 +1,42 @@
+---
+/**
+ * Cookie consent banner.
+ *
+ * Server-rendered and `hidden` by default; /consent.js reveals it only when no
+ * choice has been stored. Rendering it hidden rather than building it in
+ * JavaScript keeps it in the HTML for anyone reading the source, and means it
+ * cannot flash on a fast connection.
+ *
+ * Deliberately symmetrical. Both buttons are the same size, the same weight and
+ * the same distance from the reader's eye, and neither is styled to be the
+ * obvious one. A site whose product is honesty about limits does not get to
+ * nudge people into being measured — and there is no "manage preferences" maze,
+ * because there is exactly one thing to decide.
+ */
+---
+
+<div
+  id="nw-consent"
+  hidden
+  role="dialog"
+  aria-labelledby="nw-consent-title"
+  aria-describedby="nw-consent-body"
+  class="nw-consent"
+>
+  <div class="nw-consent-inner">
+    <div class="min-w-0">
+      <p id="nw-consent-title" class="text-sm font-semibold">Analytics cookies</p>
+      <p id="nw-consent-body" class="mt-1 text-xs" style="color: var(--nw-text-muted);">
+        We would like to use Google Analytics to see which pages people find useful. It sets
+        cookies and gives your browser a pseudonymous identifier. It is not running yet and will
+        not run unless you say yes. <strong>Your files are never involved either way</strong> —
+        they are read and cleaned on your device and never leave it. See the{' '}
+        <a href="/privacy" class="underline">privacy page</a>.
+      </p>
+    </div>
+    <div class="nw-consent-actions">
+      <button id="nw-consent-decline" type="button" class="nw-consent-button">No thanks</button>
+      <button id="nw-consent-accept" type="button" class="nw-consent-button">Allow</button>
+    </div>
+  </div>
+</div>

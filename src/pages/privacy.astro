@@ -156,15 +156,35 @@ const description =
         blocker, or Do Not Track — every tool continues to work exactly the same.
       </p>
 
-      <h2>Cookies</h2>
+      <h2>Cookies and your choice</h2>
       <p>
-        Google Analytics sets cookies, as described above. Cloudflare Web Analytics does not, and we
-        set none of our own for logins, preferences or tracking, because there is nothing to log in
-        to and nothing stored.
+        <strong>Google Analytics does not run until you allow it.</strong> Its scripts are not in
+        this page. Nothing is loaded, no cookie is set and no identifier is assigned unless you
+        press Allow on the banner. If you press No thanks, or simply ignore it, Google Analytics
+        never runs at all.
       </p>
       <p>
-        If we introduce advertising in future, ad providers may set their own cookies, and this page
-        will be updated to say so plainly before that happens.
+        Cloudflare Web Analytics is unaffected by that choice, because it is cookieless: it sets no
+        cookie, assigns no identifier and does not follow you across sites. We set no cookies of our
+        own for logins, preferences or tracking, because there is nothing to log in to and nothing
+        stored.
+      </p>
+      <p>
+        Your decision is remembered in your browser's local storage rather than in a cookie —
+        storing a cookie to remember that you declined cookies would be absurd. It never leaves your
+        device.
+      </p>
+      <p>
+        {/* Handler is attached by /consent.js — an inline onclick would be
+            blocked by the CSP and fail silently. */}
+        <button type="button" id="nw-consent-reset" class="nw-consent-button">
+          Change my choice
+        </button>
+        <span class="ms-2 text-sm nw-muted">Clears the decision and asks again.</span>
+      </p>
+      <p>
+        If we introduce advertising in future, ad providers may set their own cookies, that will
+        require its own consent, and this page will be updated to say so plainly before it happens.
       </p>
 
       <h2>Advertising</h2>

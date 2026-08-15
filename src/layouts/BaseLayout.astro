@@ -9,6 +9,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
 import { SITE } from '../lib/site';
 
 interface Props {
@@ -57,14 +58,14 @@ const ogImage = new URL('/og.svg', SITE.url).href;
       ))
     }
 
-    <!-- Google Analytics 4. Both scripts are external so the CSP needs no
-         inline hashes; the config lives in /ga.js. -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-LXNWBS7347"
-      is:inline
-    ></script>
-    <script async src="/ga.js" is:inline></script>
+    <!--
+      Google Analytics is NOT loaded here. GA4 sets cookies and assigns a
+      pseudonymous identifier, which needs consent before it runs rather than a
+      banner shown while it is already running. /consent.js injects gtag, and
+      only after someone has actively agreed. Cloudflare Web Analytics is
+      cookieless and is unaffected.
+    -->
+    <script src="/consent.js" is:inline></script>
   </head>
   <body class="flex min-h-dvh flex-col">
     <a
@@ -77,5 +78,6 @@ const ogImage = new URL('/og.svg', SITE.url).href;
       <slot />
     </main>
     <Footer />
+    <ConsentBanner />
   </body>
 </html>

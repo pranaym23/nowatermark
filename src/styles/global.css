@@ -337,6 +337,53 @@
    * pages readability beats the concept, and a citation list that shouts is a
    * citation list nobody reads. The rule above it does the separating.
    */
+  /*
+   * Consent banner. Docked to the bottom rather than covering the page: the
+   * tool must stay usable while someone decides, because refusing to let people
+   * read the page until they answer is the coercion this banner is trying not
+   * to be.
+   */
+  .nw-consent {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 50;
+    background: var(--nw-paper);
+    border-top: 5px solid var(--nw-gutter);
+  }
+  .nw-consent-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-inline: auto;
+    max-width: 68rem;
+    padding: 1rem clamp(1rem, 4vw, 2rem);
+  }
+  .nw-consent-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: .6rem;
+  }
+  /* Both choices are styled identically. See the note in ConsentBanner.astro. */
+  .nw-consent-button {
+    background: var(--nw-surface);
+    border: 1px solid var(--nw-border-strong);
+    border-radius: 0;
+    color: var(--nw-text);
+    font-size: .875rem;
+    font-weight: 650;
+    padding: .55rem 1.1rem;
+  }
+  .nw-consent-button:hover {
+    background: var(--nw-surface-muted);
+  }
+  @media (max-width: 480px) {
+    .nw-consent-actions { width: 100%; }
+    .nw-consent-button { flex: 1; }
+  }
+
   .nw-evidence {
     border-top: 3px solid var(--nw-gutter);
     padding-top: 1.5rem;

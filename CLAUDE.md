@@ -244,10 +244,12 @@ downloads" under GA4 Enhanced Measurement would make it robust.
 
 ## Open items
 
-- **Cookie consent** is not built. GA4 sets cookies without asking, which
-  generally requires prior consent in the EU/UK. The text-rewrite feature
-  compounds this: a third-party processor on an EU-facing site with no consent
-  flow is a bigger exposure than either item alone.
+- **Cookie consent is built.** GA4 is not in the HTML at all: `public/consent.js`
+  injects gtag, and only after an explicit Allow. Declining also deletes any
+  `_ga` cookies set before someone changed their mind. The choice lives in
+  localStorage, not a cookie. Cloudflare Web Analytics is untouched because it is
+  genuinely cookieless. Both banner buttons are computed-style identical — do not
+  "improve" that into a highlighted Accept.
 - **Text rewriting is off until three variables are set**, and it fails closed
   in every partial state, so there is no unsafe ordering:
   - `GEMINI_API_KEY` (secret) — without it the endpoint 503s.
@@ -308,7 +310,6 @@ frontmatter schema and `Evidence.astro`; the versioned capability matrix at
    that matters asserts on raw output bytes, not on a re-scan; a re-scan
    structurally cannot catch the incremental-write trap.
 7. Rate limiting beyond Turnstile, plus a Google-side budget cap.
-8. Cookie consent (still open, now with a third-party processor in play).
 
 **Tool page copy is only partly caught up.** `/ai-watermark-checker` now names
 the real format list; the narrower per-format tools still describe images,
