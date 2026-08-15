@@ -1,6 +1,6 @@
 ---
 title: Does Midjourney Add Metadata or Watermarks to Images?
-metaTitle: 'Does Midjourney Add Metadata or Watermarks to Images? | NoWatermark'
+metaTitle: 'Does Midjourney Add Metadata to Images? | NoWatermark'
 description: Discover what metadata, PNG text chunks, WebP headers, and C2PA credentials Midjourney attaches to images across versions and Discord vs web downloads.
 summary: Midjourney does not add visible pixel watermarks, but embeds generation parameters and headers that vary between Discord and web downloads.
 publishDate: 2026-08-14
@@ -51,7 +51,7 @@ Because Discord and Midjourney update their CDN re-encoding pipelines periodical
 
 ## PNG Text Chunks vs WebP Headers in Midjourney v5 and v6
 
-Across different model releases (Midjourney v4, v5, v6, and Niji models), Midjourney has shifted default output formats between Portable Network Graphics (PNG) and Web Picture (WebP) formats to optimize image quality and bandwidth.
+Across different model releases (Midjourney v4, v5, v6, and Niji models), Midjourney has shifted default output formats between Portable Network Graphics (PNG) and Web Picture (WebP) formats to optimise image quality and bandwidth.
 
 ### PNG Text Chunks in Midjourney Output
 In PNG outputs, metadata is written into ancillary text chunks (`tEXt` or `iTXt`):
@@ -88,7 +88,7 @@ To inspect what metadata your Midjourney images carry without uploading files to
 
 ### 2. Cleaning Midjourney Metadata Losslessly
 If you wish to share your Midjourney artwork publicly without attaching prompt parameters or software declarations:
-- Avoid taking screenshots, which reduce image resolution and alter color profiles.
+- Avoid taking screenshots, which reduce image resolution and alter colour profiles.
 - Use our [AI Metadata Remover](/ai-metadata-remover), which rewrites the PNG or WebP container to drop text chunks, XMP packets, and EXIF blocks.
 - The cleaner copies compressed pixel data byte-for-byte, ensuring zero quality loss.
 - Our tool re-scans the resulting file automatically to verify that all generator tags have been wiped.

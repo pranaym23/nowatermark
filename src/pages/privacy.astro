@@ -129,6 +129,29 @@ const description =
         never to an analytics tool, and it sends no event recording that you used it.
       </p>
       <p>
+        Beyond page views, Google Analytics receives three events about how the tool is used. This
+        is the complete list, and each one carries only the values shown:
+      </p>
+      <ul>
+        <li>
+          <code>scan_result</code> — whether you used the file or text tab, the format by name
+          (JPEG, PNG, WebP, SVG, Markdown, PDF), whether the scan succeeded, and how many signals
+          were found <em>as a range</em>: none, 1–3, 4–10, or 11 and over.
+        </li>
+        <li>
+          <code>clean_complete</code> — the format, whether cleaning succeeded, and how many signals
+          were removed, again only as one of those four ranges.
+        </li>
+        <li><code>download_click</code> — the format, and nothing else.</li>
+      </ul>
+      <p>
+        The count is a range rather than a number on purpose. “This file contained twelve signals”
+        is a fact about your specific file; “this scan was in the 11-and-over range” is a fact about
+        how the tool gets used. Filenames, file sizes, dimensions, hashes, and the values of any
+        metadata field are never sent, and the code that sends these events cannot express them —
+        the permitted values are fixed in the type system rather than left to convention.
+      </p>
+      <p>
         Analytics is optional to the product. If you block it — with an extension, a tracker
         blocker, or Do Not Track — every tool continues to work exactly the same.
       </p>

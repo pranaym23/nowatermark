@@ -1,6 +1,6 @@
 ---
 title: How to Remove Location Data (GPS) From iPhone Photos
-metaTitle: 'How to Remove Location Data (GPS) From iPhone Photos | NoWatermark'
+metaTitle: 'Remove GPS Location From iPhone Photos | NoWatermark'
 description: Learn how to strip GPS location coordinates from iPhone photos on iOS or in your browser losslessly without causing sideways photo orientation bugs.
 summary: iPhones attach precise GPS coordinates to every photo — learn how to strip location data natively on iOS or losslessly using a local browser tool.
 publishDate: 2026-08-14
@@ -75,7 +75,7 @@ Our [EXIF Remover](/exif-remover) operates directly on file container segments:
 4. It locates the `APP1` EXIF block and drops the `GPSInfo` tags alongside camera model and timestamp data.
 5. It writes a fresh file container with identical compressed image bytes (`IDAT` or `SOS` scan data).
 
-Because the compressed pixel data is copied byte-for-byte, your photos suffer zero compression artifacts or visual degradation. Furthermore, your photos are never uploaded to any server—processing occurs entirely on your device.
+Because the compressed pixel data is copied byte-for-byte, your photos suffer zero compression artefacts or visual degradation. Furthermore, your photos are never uploaded to any server—processing occurs entirely on your device.
 
 ## Beware the Orientation Tag: Why iPhone Photos Display Sideways After Cleaning
 

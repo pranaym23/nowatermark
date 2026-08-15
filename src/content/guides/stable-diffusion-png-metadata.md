@@ -1,6 +1,6 @@
 ---
 title: How to Extract Stable Diffusion Prompts and Settings From PNG Images
-metaTitle: 'Extract Stable Diffusion Prompts & Settings From PNG | NoWatermark'
+metaTitle: 'Extract Stable Diffusion Prompts From PNG | NoWatermark'
 description: Learn how Stable Diffusion stores prompts, seeds, and samplers in PNG text chunks, how to extract or strip them losslessly, and protect your privacy.
 summary: Stable Diffusion embeds your full prompt, seed, sampler, and model hash inside PNG text chunks — here is how to view or remove them without quality loss.
 publishDate: 2026-08-14

@@ -32,6 +32,7 @@ pnpm test           # 164 tests, all must pass
 pnpm typecheck      # tsc --noEmit; nothing else runs it, so run it
 pnpm fixtures       # write sample files with known metadata to tests/fixtures/samples/
 pnpm pdf:audit <dir>...  # run the PDF parser over a real corpus; prints aggregates only
+pnpm lint:content   # frontmatter, YAML safety, claims, spelling across the guides
 ```
 
 Node 22 (pinned in `.node-version`), pnpm 11. **No secrets are required** to
@@ -134,7 +135,7 @@ Cloudflare Pages → static HTML/CSS/JS → browser
   server-side belongs here.
 - `src/components/react/` — the interactive islands. `ScannerTabs` mounts both
   the image and text scanners on the homepage.
-- `src/content/guides/` — 21 Markdown guides (content collection). Frontmatter
+- `src/content/guides/` — 31 Markdown guides (content collection). Frontmatter
   carries the evidence fields: `contentType`, `cluster`, `author`, `lastTested`,
   `sources`, `changelog`. A `lab` or `comparison` page **fails the build**
   without a `lastTested` date.
@@ -215,11 +216,29 @@ Three surfaces state these terms and must move together in one commit:
 `/privacy`, `/methodology`, and the consent panel in
 `src/components/react/TextScanner.tsx`.
 
-Verified: GA sends `page_view` only. Clicking the download link does **not**
-send a `file_download` event, because the href is a `blob:` URL with no
-extension for GA's trigger to match. That is an implementation detail of
-Google's matching, not a guarantee — disabling "File downloads" under GA4
-Enhanced Measurement would make it robust.
+GA sends `page_view` plus exactly three funnel events, declared in
+`src/lib/analytics.ts`: `scan_result`, `clean_complete`, `download_click`.
+
+**The payload is enforced by the type system, not by convention.** Every event
+is declared with the exact keys it may carry, and every value is a closed enum
+or a **count bucket** (`'0' | '1-3' | '4-10' | '11+'`). An exact signal count is
+a fact about the user's file and is not permitted; the bucket is a fact about
+usage and is. `track()` will not compile with a key that is not on the list.
+Never widen those types to make a new event fit — that the type does not fit is
+the signal.
+
+There is deliberately **no rewrite event**. `/privacy` says using the rewrite
+option "sends no event recording that you used it", which is only true while
+`EventMap` has nothing for it. Adding one means editing `/privacy` in the same
+commit.
+
+Verified in a browser: a full scan and clean sends
+`ep.format=JPEG&ep.outcome=ok&ep.signals=11%2B` and nothing else. No filename,
+size, hash or metadata value. Clicking the download link does **not** fire GA's
+own `file_download`, because the href is a `blob:` URL with no extension for its
+trigger to match — so `download_click` is sent explicitly instead. That is an
+implementation detail of Google's matching, not a guarantee; disabling "File
+downloads" under GA4 Enhanced Measurement would make it robust.
 
 ---
 
@@ -283,16 +302,13 @@ frontmatter schema and `Evidence.astro`; the versioned capability matrix at
    preview before it runs. Presets read from `signals.ts`; a preset can never
    claim removal for a signal whose `remove` is false.
 4. **Homepage and navigation** (R30-R32), inside Tantei — not a redesign of it.
-5. **Analytics events.** Still absent, and three of the plan's success criteria
-   are unmeasurable without them. Allowlist is specified in build plan 0.4;
-   `/privacy` moves in the same commit.
-6. **Exercise the rewrite end-to-end in a browser.** Still never run for real —
+5. **Exercise the rewrite end-to-end in a browser.** Still never run for real —
    no Turnstile challenge can be completed from a terminal.
-7. **PDF Phase 2** — full re-serialise, never an incremental update. The test
+6. **PDF Phase 2** — full re-serialise, never an incremental update. The test
    that matters asserts on raw output bytes, not on a re-scan; a re-scan
    structurally cannot catch the incremental-write trap.
-8. Rate limiting beyond Turnstile, plus a Google-side budget cap.
-9. Cookie consent (still open, now with a third-party processor in play).
+7. Rate limiting beyond Turnstile, plus a Google-side budget cap.
+8. Cookie consent (still open, now with a third-party processor in play).
 
 **Tool page copy is only partly caught up.** `/ai-watermark-checker` now names
 the real format list; the narrower per-format tools still describe images,
@@ -306,6 +322,12 @@ Brief 11 is the working template. What was learned running it:
 - **agy in headless mode cannot use tools** — it auto-denies the permission and
   returns an error instead of output. Pass everything it needs inline in the
   prompt and tell it explicitly not to use tools.
+- **Give it the valid slug lists.** Wave 2's brief listed every legal
+  `relatedTools` and `relatedGuides` value inline; all ten articles came back
+  with working internal links and zero broken references.
+- **Run `pnpm lint:content` before reading anything.** It catches the mechanical
+  failures in seconds so the human read can be spent on facts, which is the only
+  part that cannot be automated.
 - **agy drafts; it never decides what is true.** Supply a fact sheet and forbid
   any assertion outside it. Every factual line is then verified against that
   sheet by hand before the file is written into `src/content/guides/`.
