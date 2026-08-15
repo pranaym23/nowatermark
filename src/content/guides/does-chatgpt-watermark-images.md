@@ -1,6 +1,6 @@
 ---
 title: Does ChatGPT watermark images?
-metaTitle: 'Does ChatGPT Watermark Images? What Is Actually Embedded | NoWatermark'
+metaTitle: 'Does ChatGPT Watermark Images? | NoWatermark'
 description: What OpenAI attaches to generated images, how to check for it yourself, and why a clean scan does not mean an image is not AI-generated.
 summary: ChatGPT images have generally carried C2PA Content Credentials — metadata, not a visible mark — and metadata is easily lost.
 publishDate: 2026-08-13

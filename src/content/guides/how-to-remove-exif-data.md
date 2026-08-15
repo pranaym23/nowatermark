@@ -1,6 +1,6 @@
 ---
 title: How to remove EXIF data from photos
-metaTitle: 'How to Remove EXIF Data From Photos (Without Quality Loss) | NoWatermark'
+metaTitle: 'How to Remove EXIF Data Without Quality Loss | NoWatermark'
 description: What EXIF reveals, how to strip it from JPG, PNG and WebP without re-encoding, and the rotation bug most EXIF removers have.
 summary: What is actually in there, how to remove it losslessly, and why most online EXIF removers leave your photos sideways.
 publishDate: 2026-08-13

@@ -1,6 +1,6 @@
 ---
 title: Can You Remove SynthID Watermarks From Google Gemini Images?
-metaTitle: 'Can You Remove SynthID Watermarks From Gemini Images? | NoWatermark'
+metaTitle: 'Can You Remove SynthID From Gemini Images? | NoWatermark'
 description: No browser tool can remove or detect Google SynthID pixel watermarks. Learn why metadata cleaners cannot touch SynthID and what you can clean instead.
 summary: SynthID is embedded directly in pixel data — no metadata cleaner or browser tool can detect or remove it, and tools claiming otherwise are misleading.
 publishDate: 2026-08-14
@@ -63,7 +63,7 @@ While SynthID resides in the pixel layer of Google Gemini images, Gemini and Ima
 
 - **IPTC DigitalSourceType:** Google AI tools write XMP packets containing the standard IPTC declaration `Iptc4xmpExt:DigitalSourceType = "trainedAlgorithmicMedia"`.
 - **Software Declarations:** XMP packets often carry `xmp:CreatorTool` or `tiff:Software` tags naming Google AI or Imagen.
-- **EXIF Metadata:** Standard header blocks containing image dimensions, color space profiles, and generation timestamps.
+- **EXIF Metadata:** Standard header blocks containing image dimensions, colour space profiles, and generation timestamps.
 - **C2PA Manifests:** In supported pipelines, Google attaches signed C2PA manifests (`APP11` JUMBF boxes) detailing content origin.
 
 Unlike SynthID, every single one of these attached metadata signals lives in container segments and can be cleanly inspected and removed.

@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { formatBytes } from '../../lib/bytes';
 import { ACCEPTED_MIME, MAX_FILE_BYTES, SLOW_FILE_BYTES } from '../../lib/config';
 import { countDetected, type ScanResult } from '../../lib/types';
+import { bucket, formatLabel, track } from '../../lib/analytics';
 import type { SignalCategory } from '../../lib/signals';
 import type { CleanPayload } from '../../lib/worker/protocol';
 import { ProcessingFailure, cleanFileBytes, releaseWorker, scanFileBytes } from '../../lib/worker/client';
@@ -107,12 +108,27 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
 
       setScan(result);
       setPhase('results');
+
+      // Format label and a count *bucket* only. See src/lib/analytics.ts for
+      // why an exact signal count is not permitted here.
+      track('scan_result', {
+        surface: 'file',
+        format: formatLabel(result.file.format),
+        outcome: 'ok',
+        signals: bucket(countDetected(result)),
+      });
     } catch (err) {
       if (run !== runIdRef.current) return;
       setError(
         err instanceof ProcessingFailure ? err.message : 'We couldn’t read this file.',
       );
       setPhase('error');
+      track('scan_result', {
+        surface: 'file',
+        format: 'unknown',
+        outcome: 'error',
+        signals: '0',
+      });
     }
   }, []);
 
@@ -145,6 +161,12 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
       }
       setPhase(payload.success ? 'done' : 'results');
       if (!payload.success) setError(payload.warnings[0] ?? null);
+
+      track('clean_complete', {
+        format: formatLabel(scan?.file.format),
+        outcome: payload.success ? 'ok' : 'error',
+        removed: bucket(payload.removedSignals.length),
+      });
     } catch (err) {
       if (run !== runIdRef.current) return;
       setError(
@@ -154,7 +176,9 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
       );
       setPhase('results');
     }
-  }, [file, preserveOrientation]);
+    // `scan` is read for the format label, so it belongs in the deps — without
+    // it the callback would close over a stale result after a second file.
+  }, [file, preserveOrientation, scan]);
 
   const onDrop = useCallback(
     (event: React.DragEvent) => {
@@ -452,6 +476,13 @@ function CleanReport({
             download={clean.filename}
             className="nw-button inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm"
             style={{ backgroundColor: 'var(--nw-accent)', color: 'var(--nw-accent-contrast)' }}
+            /*
+             * GA's own "file download" trigger cannot see this: the href is a
+             * blob: URL with no extension to match. So the event is sent
+             * explicitly — and carries the format label and nothing else. The
+             * filename sitting right there in `download` must never join it.
+             */
+            onClick={() => track('download_click', { format: formatLabel(clean.before.file.format) })}
           >
             Download clean image
           </a>

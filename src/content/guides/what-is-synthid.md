@@ -1,6 +1,6 @@
 ---
 title: What is SynthID?
-metaTitle: "What is SynthID? Google's Invisible Watermark Explained | NoWatermark"
+metaTitle: "What is SynthID? Google's Invisible Watermark | NoWatermark"
 description: How Google's SynthID watermark works, why it survives editing, and why no browser-based tool can detect or remove it.
 summary: Google's imperceptible watermark lives in the pixels, not the metadata — which changes everything about what you can do with it.
 publishDate: 2026-08-13

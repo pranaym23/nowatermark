@@ -25,7 +25,7 @@ Unlike traditional web user interfaces that compress generation parameters into 
 When saving PNG files, ComfyUI injects these JSON structures into `tEXt` or `iTXt` ancillary chunks prior to the final `IEND` marker:
 
 1. **The `prompt` Chunk:** Contains the API-level execution graph evaluated by the Python backend. This JSON maps every executed node ID, class type (e.g., `KSampler`, `CLIPTextEncode`, `VAEDecode`, `LoadCheckPoint`), input wire connections, model checkpoint names, seed integers, CFG values, and positive/negative prompt text strings.
-2. **The `workflow` Chunk:** Contains the complete visual user interface layout. This includes node canvas coordinates, node dimensions, custom group boxes, color coding, wire routing, and UI widget states required to render the interactive graph on screen.
+2. **The `workflow` Chunk:** Contains the complete visual user interface layout. This includes node canvas coordinates, node dimensions, custom group boxes, colour coding, wire routing, and UI widget states required to render the interactive graph on screen.
 
 When saving WebP files, ComfyUI writes these same JSON payloads into EXIF or XMP metadata header blocks embedded within the RIFF container.
 
@@ -58,7 +58,7 @@ Because processing occurs entirely inside your browser using local JavaScript fi
 
 ## How to Strip ComfyUI Workflows Losslessly in Your Browser
 
-Many creators attempt to remove ComfyUI workflow data by taking a screenshot of the image or using generic online image converters. Screen captures reduce image resolution, alter color profiles, and discard high-dynamic-range details. Online converters decode the image and apply lossy re-compression, permanently degrading visual quality.
+Many creators attempt to remove ComfyUI workflow data by taking a screenshot of the image or using generic online image converters. Screen captures reduce image resolution, alter colour profiles, and discard high-dynamic-range details. Online converters decode the image and apply lossy re-compression, permanently degrading visual quality.
 
 Our [AI Metadata Remover](/ai-metadata-remover) provides a container-level solution that strips ComfyUI workflows without touching a single pixel:
 

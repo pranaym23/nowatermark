@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fixtures": "node --experimental-strip-types tests/fixtures/generate.ts",
-    "pdf:audit": "node scripts/run-ts.mjs scripts/pdf-audit.ts"
+    "pdf:audit": "node scripts/run-ts.mjs scripts/pdf-audit.ts",
+    "lint:content": "node scripts/run-ts.mjs scripts/content-lint.ts"
   },
   "dependencies": {
     "astro": "^7.2.2"

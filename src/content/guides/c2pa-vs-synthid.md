@@ -1,6 +1,6 @@
 ---
 title: C2PA vs SynthID
-metaTitle: 'C2PA vs SynthID: Two Opposite Approaches to Provenance | NoWatermark'
+metaTitle: 'C2PA vs SynthID: Label or Ink? | NoWatermark'
 description: C2PA attaches provenance to a file; SynthID embeds it in the pixels. Understanding the difference explains what any tool can and cannot do.
 summary: One is a label on the bottle, the other is dissolved in the liquid. Almost every practical question follows from that distinction.
 publishDate: 2026-08-13

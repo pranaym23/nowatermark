@@ -1,6 +1,6 @@
 ---
 title: Hidden Unicode characters explained
-metaTitle: 'Hidden Unicode Characters: Zero-Width Spaces and Tag Characters | NoWatermark'
+metaTitle: 'Hidden Unicode: Zero-Width and Tag Characters | NoWatermark'
 description: What invisible Unicode characters are, how they hide information in ordinary text, and how to remove them without breaking emoji.
 summary: Zero-width spaces, bidi overrides and tag characters — what they do, why they turn up in your text, and how to strip them safely.
 publishDate: 2026-08-13
