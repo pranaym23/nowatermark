@@ -303,9 +303,12 @@ export default function TextScanner() {
               rewritten text is changed, not confirmed clean.
             </li>
             <li>
-              Google’s handling of the text is governed by their terms — see our{' '}
+              <strong>Google uses this text to improve their products, and human reviewers may
+              read it.</strong>{' '}
+              That is their stated policy for the tier this uses. Do not send anything
+              confidential, personal or sensitive —{' '}
               <a href="/privacy" className="underline">
-                privacy page
+                the details are on our privacy page
               </a>
               .
             </li>

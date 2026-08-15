@@ -133,7 +133,9 @@ const mark = (value: boolean | 'target') =>
           offer an optional <em>rewrite</em> for pasted text, which rewords it in an attempt to
           disturb one. It is the only feature on this site that sends anything anywhere: it asks
           every time, shows you the exact payload first, and sends only the text you pasted — never
-          a file. Because we have no detector, its result is reported as
+          a file. Google uses that text to improve their products and human reviewers may read it,
+          so it is the wrong tool for anything confidential — see <a href="/privacy">privacy</a>.
+          Because we have no detector, its result is reported as
           <strong>"Rewritten — unverified"</strong> and never counted as a removal.
         </li>
         <li>

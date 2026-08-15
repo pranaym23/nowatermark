@@ -179,6 +179,14 @@ Two tools, and they differ:
 in the same commit — a false privacy claim is the most damaging possible bug on
 this site.
 
+The same rule covers the text-rewrite feature. `/privacy` currently states the
+**unpaid** Gemini API terms: Google uses submitted text to improve its products
+and **human reviewers may read it**. Moving the key to Google's paid tier changes
+that materially (no product-improvement use, brief abuse-detection logging only)
+and `/privacy`, `/methodology` and the consent panel in `TextScanner.tsx` must all
+be updated in that same commit. EEA/Switzerland/UK users already get the paid
+terms regardless.
+
 Verified: GA sends `page_view` only. Clicking the download link does **not**
 send a `file_download` event, because the href is a `blob:` URL with no
 extension for GA's trigger to match. That is an implementation detail of
