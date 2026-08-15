@@ -28,9 +28,10 @@ pnpm install
 pnpm dev            # http://localhost:4321
 pnpm build          # static output to dist/
 pnpm preview        # serve the build
-pnpm test           # 157 tests, all must pass
+pnpm test           # 164 tests, all must pass
 pnpm typecheck      # tsc --noEmit; nothing else runs it, so run it
 pnpm fixtures       # write sample files with known metadata to tests/fixtures/samples/
+pnpm pdf:audit <dir>...  # run the PDF parser over a real corpus; prints aggregates only
 ```
 
 Node 22 (pinned in `.node-version`), pnpm 11. **No secrets are required** to
@@ -71,7 +72,7 @@ Break any of these and the product stops being what it claims to be.
    inspired; the visual language is panel layout and halftone, not Japanese
    text. Enforce with:
    `rg -lP '[\x{3000}-\x{30FF}\x{4E00}-\x{9FFF}\x{FF00}-\x{FFEF}]' src/`
-7. **157 tests stay green.** A failure means the engine broke — fix the code,
+7. **164 tests stay green.** A failure means the engine broke — fix the code,
    not the test. There is no CI: `pnpm build` on Cloudflare Pages is the only
    automatic gate and it does **not** typecheck, so run `pnpm typecheck` and
    `pnpm test` yourself before pushing.
@@ -105,6 +106,13 @@ console. A CSP failure is silent in the UI.**
 Prefer external same-origin files over inline `<script>` blocks (see
 `public/ga.js`); an inline block needs a hash regenerated on every edit.
 
+**Shiki is disabled** (`markdown.syntaxHighlight: false` in `astro.config.ts`).
+It wrote its theme as a hard-coded inline style — `background-color:#24292e`
+— which pinned code blocks to one dark palette in both themes and put raw hex
+into the page, both forbidden by the Tantei spec. It was also the source of the
+CSP warning Astro printed on every build. Code blocks are now bare
+`<pre><code>` styled from tokens in `global.css`. Don't turn it back on.
+
 ---
 
 ## Architecture
@@ -126,8 +134,14 @@ Cloudflare Pages → static HTML/CSS/JS → browser
   server-side belongs here.
 - `src/components/react/` — the interactive islands. `ScannerTabs` mounts both
   the image and text scanners on the homepage.
-- `src/content/guides/` — 16 Markdown guides (content collection).
-- `src/pages/[tool].astro` — one template drives all 14 tool pages from
+- `src/content/guides/` — 21 Markdown guides (content collection). Frontmatter
+  carries the evidence fields: `contentType`, `cluster`, `author`, `lastTested`,
+  `sources`, `changelog`. A `lab` or `comparison` page **fails the build**
+  without a `lastTested` date.
+- `src/pages/capabilities.astro` — the versioned capability matrix, generated
+  from `formats.ts` + `signals.ts`. Content links here for claims. It must never
+  gain a hand-written capability claim.
+- `src/pages/[tool].astro` — one template drives all 13 tool pages from
   `src/lib/site.ts`. **Never fork the scanner per page.**
 
 "Cloudflare Workers" are banned (server compute) with **one** documented
@@ -238,33 +252,68 @@ Enhanced Measurement would make it robust.
 
 ---
 
-## Where the build is (2026-08-14)
+## Where the build is (2026-08-15)
 
 Live on `main`, deployed and verified. Briefs and reports in `.briefs/` and
-`.reports/`, numbered 06–10.
+`.reports/`, numbered 06–11.
 
 **Done:** format registry; SVG scan+clean (including images embedded as data
 URIs); Markdown scan+clean; PDF **inspect-only**; opt-in text rewriting on
 Gemini paid tier with Turnstile.
 
+**V2 is in progress.** `NOWATERMARK-V2-PLAN.md` is the product contract;
+`NOWATERMARK-V2-BUILD-PLAN.md` is the executable sequence and records five
+amendments to the contract — read its section 1 before building against it. The
+most important is **A1: R7 as originally drafted would have permitted file
+upload behind a consent dialog, which reverses non-negotiable #1. It is
+rewritten. Files never leave the device, consented or not.**
+
+**Done in V2 so far:** real-PDF validation (report 11 — 733 files, 99.3% clean,
+PDF now claimable for scanning); structural C2PA-in-PDF detection; the evidence
+frontmatter schema and `Evidence.astro`; the versioned capability matrix at
+`/capabilities`; five evidence-led guides (brief 11).
+
 **Next, in rough priority order:**
 
-1. **Run real PDFs through `collectPdfMetadata`.** The parser has only ever seen
-   fixtures. Brief 09 gates Phase 2 (cleaning) on this — a few hundred
-   real-world files, recording what degrades. Highest-value next action.
-2. **Narrow the C2PA-in-PDF check.** It is currently a raw byte search for
-   `c2pa`/`jumb` and will false-positive on any PDF containing those strings.
-3. **Exercise the rewrite end-to-end in a browser.** Never run for real — no
-   Turnstile challenge can be completed from a terminal.
-4. **PDF Phase 2** — full re-serialise, never an incremental update. The test
+1. **Publish-Ready Check** (R1) — one entry point across image, document and
+   text. The existing scanners become its modes.
+2. **Results redesign** (R2, R4) — the four-way classification and the three
+   separated exposure axes. No composite score, ever.
+3. **Cleanup presets** (R5) — privacy-safe / provenance-light / custom, with a
+   preview before it runs. Presets read from `signals.ts`; a preset can never
+   claim removal for a signal whose `remove` is false.
+4. **Homepage and navigation** (R30-R32), inside Tantei — not a redesign of it.
+5. **Analytics events.** Still absent, and three of the plan's success criteria
+   are unmeasurable without them. Allowlist is specified in build plan 0.4;
+   `/privacy` moves in the same commit.
+6. **Exercise the rewrite end-to-end in a browser.** Still never run for real —
+   no Turnstile challenge can be completed from a terminal.
+7. **PDF Phase 2** — full re-serialise, never an incremental update. The test
    that matters asserts on raw output bytes, not on a re-scan; a re-scan
    structurally cannot catch the incremental-write trap.
-5. Rate limiting beyond Turnstile, plus a Google-side budget cap.
-6. Cookie consent (still open, now with a third-party processor in play).
+8. Rate limiting beyond Turnstile, plus a Google-side budget cap.
+9. Cookie consent (still open, now with a third-party processor in play).
 
-**Tool pages have not been updated for the new formats.** `src/lib/site.ts`
-still describes the 14 tools as image-only. That is SEO copy, not a correctness
-bug, but `/methodology` and the scanner UI have moved ahead of it.
+**Tool page copy is only partly caught up.** `/ai-watermark-checker` now names
+the real format list; the narrower per-format tools still describe images,
+which is accurate for them. R29 (hub-and-spoke consolidation) will settle the
+rest.
+
+## Outsourcing content to agy
+
+Brief 11 is the working template. What was learned running it:
+
+- **agy in headless mode cannot use tools** — it auto-denies the permission and
+  returns an error instead of output. Pass everything it needs inline in the
+  prompt and tell it explicitly not to use tools.
+- **agy drafts; it never decides what is true.** Supply a fact sheet and forbid
+  any assertion outside it. Every factual line is then verified against that
+  sheet by hand before the file is written into `src/content/guides/`.
+- Claude owns the file writes, not agy. That keeps the verification step from
+  being skippable.
+- The QA pass caught real defects every time, including **an error in my own
+  brief** (a wrong macOS version) that agy faithfully propagated. Verify the
+  fact sheet as well as the draft.
 
 ---
 

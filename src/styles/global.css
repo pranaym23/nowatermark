@@ -253,6 +253,19 @@
     background-color: var(--nw-surface-muted);
     font-weight: 600;
   }
+  /*
+   * On a phone, `width: 100%` keeps a wide table from breaking the layout, but
+   * it does it by crushing the columns. Let the table take its natural width
+   * and scroll inside itself instead — the page still must not move sideways.
+   */
+  @media (max-width: 639px) {
+    .nw-content table {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      width: max-content;
+    }
+  }
 
   /* Wide content must scroll inside itself, never the page. */
   /* The real <input type=file> is sr-only, so focus must show on its label. */
