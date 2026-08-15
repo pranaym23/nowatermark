@@ -15,7 +15,9 @@
  * It logs no request bodies. It stores nothing.
  */
 
-interface Env {
+import { RULES, checkRateLimit, type RateLimitEnv } from './_rate-limit';
+
+interface Env extends RateLimitEnv {
   /** Google AI Studio key. Set as a Pages secret; never in the repo. */
   GEMINI_API_KEY?: string;
   /** Turnstile secret for the bot check. */
@@ -116,6 +118,28 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: 'Could not verify this request came from a browser.' }, 403);
   }
 
+  /*
+   * Turnstile proves this came from a browser. It does not stop one browser
+   * asking two thousand times, and every call spends money on our key. Checked
+   * after Turnstile so a flood of unverified requests cannot fill the limiter
+   * and lock out real users.
+   */
+  const limit = await checkRateLimit(env, ip);
+  if (!limit.allowed) {
+    return new Response(
+      JSON.stringify({
+        error: `That is a lot of rewriting in a short time. Try again in ${limit.retryAfter} seconds.`,
+      }),
+      {
+        status: 429,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'retry-after': String(limit.retryAfter),
+        },
+      },
+    );
+  }
+
   try {
     const upstream = await fetch(`${ENDPOINT}?key=${encodeURIComponent(env.GEMINI_API_KEY)}`, {
       method: 'POST',
@@ -148,6 +172,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
 /** Anything other than POST is not part of this endpoint's contract. */
 export const onRequest: PagesFunction<Env> = async (context) => {
+  /*
+   * A GET reports configuration, and nothing else. Whether rate limiting is
+   * running in its durable or its per-isolate mode is exactly the sort of thing
+   * that is silently wrong for months, so it is inspectable rather than
+   * assumed. It reveals no secret: every value is a boolean about presence.
+   */
+  if (context.request.method === 'GET') {
+    return json({
+      configured: Boolean(context.env.GEMINI_API_KEY && context.env.TURNSTILE_SECRET_KEY),
+      rateLimit: context.env.REWRITE_LIMITS ? 'kv' : 'memory-only',
+      limits: RULES.map((r) => `${r.max} per ${r.windowSeconds}s`),
+    });
+  }
   if (context.request.method !== 'POST') {
     return json({ error: 'Method not allowed.' }, 405);
   }

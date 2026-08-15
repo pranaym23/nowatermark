@@ -17,3 +17,18 @@ interface PagesFunctionContext<Env = unknown> {
 type PagesFunction<Env = unknown> = (
   context: PagesFunctionContext<Env>,
 ) => Response | Promise<Response>;
+
+/**
+ * Only the three KV operations the rate limiter uses. Same reasoning as above:
+ * the real namespace type has a much larger surface, and importing a dependency
+ * to describe three calls would cost more than it explains.
+ */
+interface KVNamespace {
+  get(key: string): Promise<string | null>;
+  put(
+    key: string,
+    value: string,
+    options?: { expirationTtl?: number },
+  ): Promise<void>;
+  delete(key: string): Promise<void>;
+}
