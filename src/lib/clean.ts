@@ -10,6 +10,7 @@
  */
 
 import { cleanJpegBytes } from './cleaners/jpeg';
+import { cleanPdfBytes } from './cleaners/pdf';
 import { cleanPngBytes } from './cleaners/png';
 import { cleanMarkdownBytes } from './cleaners/markdown';
 import { cleanSvgBytes } from './cleaners/svg';
@@ -81,16 +82,17 @@ const CLEANERS: Record<CleanableNowFormat, Cleaner> = {
   jpeg: (bytes, ctx) => cleanJpegBytes(bytes, ctx.preserveOrientation, ctx),
   png: (bytes, ctx) => cleanPngBytes(bytes, ctx.preserveOrientation, ctx),
   webp: (bytes, ctx) => cleanWebpBytes(bytes, ctx.preserveOrientation, ctx),
+  pdf: (bytes) => cleanPdfBytes(bytes),
   svg: cleanSvgBytes,
   markdown: cleanMarkdownBytes,
 };
 
-function runCleaner(
+async function runCleaner(
   bytes: Uint8Array,
   format: CleanableFormat,
   preserveOrientation: boolean,
   blocks?: ReadonlySet<string>,
-): RawCleanOutcome {
+): Promise<RawCleanOutcome> {
   if (!isCleanable(format)) {
     // Scannable but not cleanable — we can say what is in the file but not
     // change it. The caller reports this as a failed clean, original intact.
@@ -162,7 +164,7 @@ export async function cleanImage(
   const format = before.file.format!;
   const filename = cleanedFilename(input.name, format);
 
-  const outcome = runCleaner(bytes, format, preserveOrientation, blocks);
+  const outcome = await runCleaner(bytes, format, preserveOrientation, blocks);
 
   if (!outcome.ok) {
     return {

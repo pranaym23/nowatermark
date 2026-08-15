@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.21.0",
-  "description": "NoWatermark.fyi — AI provenance & metadata tools that run entirely in your browser.",
+  "description": "NoWatermark.fyi \u2014 AI provenance & metadata tools that run entirely in your browser.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "fixtures": "node --experimental-strip-types tests/fixtures/generate.ts",
     "pdf:audit": "node scripts/run-ts.mjs scripts/pdf-audit.ts",
-    "lint:content": "node scripts/run-ts.mjs scripts/content-lint.ts"
+    "lint:content": "node scripts/run-ts.mjs scripts/content-lint.ts",
+    "pdf:clean-audit": "node scripts/run-ts.mjs scripts/pdf-clean-audit.ts",
+    "pdf:content-check": "node scripts/run-ts.mjs scripts/pdf-content-check.ts"
   },
   "dependencies": {
     "astro": "^7.2.2"

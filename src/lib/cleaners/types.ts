@@ -46,4 +46,11 @@ export function shouldRemove(ctx: CleanContext, signalId: string): boolean {
   return ctx.blocks === undefined || ctx.blocks.has(signalId);
 }
 
-export type Cleaner = (bytes: Uint8Array, ctx: CleanContext) => RawCleanOutcome;
+/**
+ * PDF cleaning has to re-parse its own output to verify it, so a cleaner may be
+ * asynchronous. The raster cleaners stay synchronous and are simply awaited.
+ */
+export type Cleaner = (
+  bytes: Uint8Array,
+  ctx: CleanContext,
+) => RawCleanOutcome | Promise<RawCleanOutcome>;

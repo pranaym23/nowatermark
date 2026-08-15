@@ -13,7 +13,7 @@ import { SUPPORTED_FORMATS, extensionFor, mimeFor } from '../src/lib/filetype';
 describe('format registry', () => {
   it('exposes exactly the formats the engine can process today', () => {
     expect([...SCANNABLE_FORMATS]).toEqual(['jpeg', 'png', 'webp', 'svg', 'markdown', 'pdf']);
-    expect([...CLEANABLE_FORMATS]).toEqual(['jpeg', 'png', 'webp', 'svg', 'markdown']);
+    expect([...CLEANABLE_FORMATS]).toEqual(['jpeg', 'png', 'webp', 'svg', 'markdown', 'pdf']);
   });
 
   // The accept list is derived, so it must never drift from the registry —
@@ -53,8 +53,9 @@ describe('format registry', () => {
     // because error copy and future briefs depend on them.
     expect(mimeFor('pdf')).toBe('application/pdf');
     expect(extensionFor('markdown')).toBe('md');
-    // PDF is open for scanning but has no cleaner yet (brief 09, Phase 1).
+    // PDF gained a cleaner in Phase 2. It re-serialises the whole document
+    // rather than appending, and verifies its own output before returning it.
     expect(isScannable('pdf')).toBe(true);
-    expect(isCleanable('pdf')).toBe(false);
+    expect(isCleanable('pdf')).toBe(true);
   });
 });

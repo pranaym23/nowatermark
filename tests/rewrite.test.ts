@@ -8,6 +8,7 @@ import {
 } from '../src/lib/rewrite';
 import { SIGNALS } from '../src/lib/signals';
 import { RULES, checkRateLimit } from '../functions/api/_rate-limit';
+import { onRequestPost } from '../functions/api/rewrite';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -177,5 +178,73 @@ describe('rewrite rate limiting', () => {
     const r = await checkRateLimit(env, '192.0.2.50');
     expect(r.tier).toBe('memory');
     expect(r.allowed).toBe(true);
+  });
+});
+
+/*
+ * The rewrite endpoint's refusal paths (item 5).
+ *
+ * A browser is needed to complete a real Turnstile challenge, so the happy path
+ * cannot be exercised here. Every refusal can be, and the refusals are the part
+ * that protects the API key — so they are the part worth pinning.
+ */
+describe('rewrite endpoint refuses before it spends anything', () => {
+  const post = (body: unknown, env: Record<string, unknown>) =>
+    onRequestPost({
+      request: new Request('https://nowatermark.fyi/api/rewrite', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+      env,
+      params: {},
+      next: async () => new Response(null),
+      waitUntil: () => {},
+    } as never);
+
+  it('503s with no Gemini key', async () => {
+    const res = await post({ text: 'hello' }, {});
+    expect(res.status).toBe(503);
+  });
+
+  it('503s when the Gemini key is present but the bot check is not', async () => {
+    // The important one: a deployment with a spendable key and no Turnstile
+    // secret must refuse, rather than serving the open internet.
+    const res = await post({ text: 'hello' }, { GEMINI_API_KEY: 'k' });
+    expect(res.status).toBe(503);
+    expect(await res.text()).toMatch(/bot protection/i);
+  });
+
+  it('rejects an empty body before any upstream call', async () => {
+    const res = await post({ text: '   ' }, { GEMINI_API_KEY: 'k', TURNSTILE_SECRET_KEY: 's' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects over-long text before any upstream call', async () => {
+    const res = await post(
+      { text: 'x'.repeat(20_000) },
+      { GEMINI_API_KEY: 'k', TURNSTILE_SECRET_KEY: 's' },
+    );
+    expect(res.status).toBe(413);
+  });
+
+  it('rejects a missing Turnstile token without calling Google', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const res = await post(
+      { text: 'hello' },
+      { GEMINI_API_KEY: 'k', TURNSTILE_SECRET_KEY: 's' },
+    );
+    expect(res.status).toBe(403);
+    // No token means we do not even ask Turnstile, let alone Google.
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+  });
+
+  it('never echoes the submitted text back in an error', async () => {
+    const secret = 'CONFIDENTIAL-SENTINEL-TEXT';
+    const res = await post(
+      { text: secret },
+      { GEMINI_API_KEY: 'k', TURNSTILE_SECRET_KEY: 's' },
+    );
+    expect(await res.text()).not.toContain(secret);
   });
 });

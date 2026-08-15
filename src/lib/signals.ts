@@ -415,6 +415,12 @@ export const VALIDATION_NOTES: readonly ValidationNote[] = [
       '733 real-world PDFs scanned locally: 99.3% parsed cleanly, no exceptions, median 0.2 ms. 3.7% carried metadata in a revision the current one had superseded.',
   },
   {
+    subject: 'PDF cleaning',
+    date: '2026-08-15',
+    summary:
+      '727 of 733 real PDFs rebuilt successfully, 6 refused, none damaged. Every cleaned file parsed back, held exactly one revision, and contained no trace of its original author string. Page counts and content-stream bytes were identical before and after in all 727.',
+  },
+  {
     subject: 'Lossless cleaning',
     date: '2026-08-15',
     summary:
@@ -455,16 +461,16 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
   {
     label: 'PDF document metadata',
     detect: true,
-    remove: false,
-    verify: false,
-    note: 'Inspect-only. Removing it correctly means rewriting the whole document, which we do not do yet.',
+    remove: true,
+    verify: true,
+    note: 'The document is rebuilt from scratch, never appended to, and the output is checked against its raw bytes before it is offered.',
   },
   {
     label: 'PDF earlier revisions',
     detect: true,
-    remove: false,
-    verify: false,
-    note: 'Previous versions left in the file by incremental saves. We report them; we cannot remove them.',
+    remove: true,
+    verify: true,
+    note: 'Previous versions left in the file by incremental saves. A rebuild drops them entirely — the cleaned file has exactly one revision.',
   },
   {
     label: 'SVG active content',

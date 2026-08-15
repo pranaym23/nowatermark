@@ -96,3 +96,76 @@ compile-time guard would reject a cleaner-less `'clean'`.
   XMP packet inside an embedded file. Over-reporting, not under-reporting.
 - Not verified in a real browser. `DecompressionStream` is well supported but
   the worker path has not been exercised with a PDF.
+
+---
+
+# Phase 2 — cleaning (2026-08-15)
+
+PDF moved from inspect-only to `support: 'clean'`.
+
+## How it works
+
+`src/lib/pdf/serialise.ts` rebuilds the document. It walks the object graph
+reachable from the **current** catalog, drops the metadata carriers, renumbers
+what remains, and emits a single-revision file with one xref table. Nothing from
+an older revision can survive, because nothing is copied except objects the walk
+deliberately reached. Content streams are copied byte-for-byte; nothing is
+re-deflated.
+
+No `/Info` and no `/ID` are written. `/ID` is a pair of identifiers derived from
+the original file, and carrying it forward would leave a fingerprint of the
+document we were asked to clean.
+
+## Why the re-scan was not enough
+
+The brief is right that a re-scan cannot catch the incremental-write trap: an
+appended update leaves the old `/Info` earlier in the file, the parser follows
+the new xref, finds it empty, and reports success. So `cleaners/pdf.ts` verifies
+its own output against **raw bytes** before returning it, and discards it if:
+
+- the output does not parse back cleanly
+- the output has anything other than exactly one revision
+- any `/Info` field or XMP packet survived
+- **any original metadata value appears anywhere in the output bytes**
+
+Any of those returns `ok: false` and the caller keeps the original. Refusing is
+always safe; shipping a damaged document is not.
+
+## Real-world results
+
+`pnpm pdf:clean-audit` over the same 733-file corpus as Phase 1:
+
+| | | |
+|---|---|---|
+| Cleaned | 727 | **99.2%** |
+| Refused | 6 | 0.8% |
+| Threw | 0 | **0.0%** |
+
+Refusals: 5 "unsupported structure" (the same files Phase 1 reported as
+degraded), and **1 caught by the cleaner's own byte check** — a real file where
+a metadata value survived the rebuild, and the safety valve discarded the output
+rather than shipping it. That refusal is the single most reassuring line in this
+report.
+
+Of the 727 cleaned: every one parsed back, every one had exactly one revision,
+and none contained its original author string anywhere in its bytes. Median
+output was 0.93× the input size.
+
+## Content preservation
+
+`pnpm pdf:content-check` compares page count and the raw bytes of every content
+stream, before and after. Parsing is not rendering — a PDF can be structurally
+valid and blank — so this is the closest check to "looks the same" available
+without a renderer.
+
+**727 of 727 identical.** Zero page-count changes, zero content-stream byte
+changes.
+
+## Refused by design
+
+- Encrypted PDFs. Cleaning would mean decrypting and re-encrypting strings and
+  streams to keep them readable. Not attempted.
+- Documents whose xref chain could not be followed.
+- Anything where the catalog could not be read.
+- Embedded file attachments are carried over rather than inspected, and the
+  cleaner warns about them.

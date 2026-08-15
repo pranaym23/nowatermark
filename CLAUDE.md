@@ -28,10 +28,12 @@ pnpm install
 pnpm dev            # http://localhost:4321
 pnpm build          # static output to dist/
 pnpm preview        # serve the build
-pnpm test           # 164 tests, all must pass
+pnpm test           # 187 tests, all must pass
 pnpm typecheck      # tsc --noEmit; nothing else runs it, so run it
 pnpm fixtures       # write sample files with known metadata to tests/fixtures/samples/
-pnpm pdf:audit <dir>...  # run the PDF parser over a real corpus; prints aggregates only
+pnpm pdf:audit <dir>...        # parse a real corpus; aggregates only
+pnpm pdf:clean-audit <dir>...  # clean a real corpus; refusal + verification rates
+pnpm pdf:content-check <dir>...# pages and content streams identical after cleaning?
 pnpm lint:content   # frontmatter, YAML safety, claims, spelling across the guides
 ```
 
@@ -73,7 +75,7 @@ Break any of these and the product stops being what it claims to be.
    inspired; the visual language is panel layout and halftone, not Japanese
    text. Enforce with:
    `rg -lP '[\x{3000}-\x{30FF}\x{4E00}-\x{9FFF}\x{FF00}-\x{FFEF}]' src/`
-7. **164 tests stay green.** A failure means the engine broke — fix the code,
+7. **187 tests stay green.** A failure means the engine broke — fix the code,
    not the test. There is no CI: `pnpm build` on Cloudflare Pages is the only
    automatic gate and it does **not** typecheck, so run `pnpm typecheck` and
    `pnpm test` yourself before pushing.
@@ -131,6 +133,10 @@ Cloudflare Pages → static HTML/CSS/JS → browser
   C2PA/JUMBF detector, hidden-Unicode scanner, SVG region scanner, Markdown
   frontmatter locator, and a PDF object/xref parser (`src/lib/pdf/`).
 - `src/lib/formats.ts` — the format registry. Adding a format starts here.
+- `src/lib/pdf/serialise.ts` — **the dangerous file.** PDF cleaning rebuilds the
+  whole document; it must never append an incremental update, because a re-scan
+  would confirm a false removal. `cleaners/pdf.ts` verifies its own output
+  against raw bytes and discards it on any doubt. Refusing is always safe.
 - `functions/` — the single Pages Function (text-rewrite proxy). Nothing else
   server-side belongs here.
 - `src/components/react/` — the interactive islands. `ScannerTabs` mounts both
@@ -279,7 +285,7 @@ Live on `main`, deployed and verified. Briefs and reports in `.briefs/` and
 `.reports/`, numbered 06–11.
 
 **Done:** format registry; SVG scan+clean (including images embedded as data
-URIs); Markdown scan+clean; PDF **inspect-only**; opt-in text rewriting on
+URIs); Markdown scan+clean; PDF scan **and clean** (full re-serialise); opt-in text rewriting on
 Gemini paid tier with Turnstile.
 
 **V2 is in progress.** `NOWATERMARK-V2-PLAN.md` is the product contract;
@@ -306,10 +312,10 @@ frontmatter schema and `Evidence.astro`; the versioned capability matrix at
 4. **Homepage and navigation** (R30-R32), inside Tantei — not a redesign of it.
 5. **Exercise the rewrite end-to-end in a browser.** Still never run for real —
    no Turnstile challenge can be completed from a terminal.
-6. **PDF Phase 2** — full re-serialise, never an incremental update. The test
-   that matters asserts on raw output bytes, not on a re-scan; a re-scan
-   structurally cannot catch the incremental-write trap.
-7. Rate limiting beyond Turnstile, plus a Google-side budget cap.
+6. Rate limiting is built, but **two operator steps remain**: bind a
+   `REWRITE_LIMITS` KV namespace, and set a Google-side budget cap. Both are
+   documented in `.env.example`. Rate limiting bounds requests; only the budget
+   cap bounds spend.
 
 **Tool page copy is only partly caught up.** `/ai-watermark-checker` now names
 the real format list; the narrower per-format tools still describe images,

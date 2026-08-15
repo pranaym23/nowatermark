@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { cleanImage } from '../src/lib/clean';
 import { detectType } from '../src/lib/filetype';
 import { collectPdfMetadata } from '../src/lib/metadata/pdf';
+import { cleanPdfBytes } from '../src/lib/cleaners/pdf';
 import { readPdf } from '../src/lib/pdf/document';
 import { PdfLexer, textOf } from '../src/lib/pdf/lexer';
 import { scanImage } from '../src/lib/scan';
@@ -218,13 +219,24 @@ describe('PDF Phase 1 claims nothing it cannot do', () => {
     }
   });
 
-  it('refuses to clean, and says the original is untouched', async () => {
+  it('now cleans through the full pipeline, and reports it removed', async () => {
+    // Phase 1 asserted a refusal here. Phase 2 replaced it: the assertion that
+    // still matters is that the removal is real, which is checked against raw
+    // bytes in the re-serialisation suite below rather than by this re-scan.
     const pdf = buildPdfFixture();
+    const outcome = await cleanImage(pdf, input('doc.pdf', pdf.length));
+
+    expect(outcome.result.success).toBe(true);
+    expect(outcome.result.blob).toBeDefined();
+    expect(outcome.result.removedSignals).toContain('author');
+  });
+
+  it('still refuses when it cannot rebuild the document safely', async () => {
+    const pdf = buildPdfFixture({ withEncryption: true });
     const outcome = await cleanImage(pdf, input('doc.pdf', pdf.length));
 
     expect(outcome.result.success).toBe(false);
     expect(outcome.result.blob).toBeUndefined();
-    expect(outcome.result.removedSignals).toEqual([]);
     expect(outcome.result.warnings.join(' ')).toContain('has not been changed');
   });
 
@@ -232,5 +244,71 @@ describe('PDF Phase 1 claims nothing it cannot do', () => {
     const pdf = buildPdfFixture({ withEncryption: true });
     const result = await scanImage(pdf, input('doc.pdf', pdf.length));
     expect(result.warnings.join(' ')).toContain('encrypted');
+  });
+});
+
+/*
+ * PDF Phase 2 — full re-serialisation.
+ *
+ * These assert on raw output bytes, not on a re-scan. That distinction is the
+ * whole point: a cleaner that appended an incremental update would pass a
+ * re-scan while leaving the author's name in the file.
+ */
+describe('PDF cleaning rebuilds rather than appends', () => {
+  it('removes the author, and it is nowhere in the raw bytes', async () => {
+    const pdf = buildPdfFixture();
+    const outcome = await cleanPdfBytes(pdf);
+
+    expect(outcome.ok, outcome.warnings.join(' ')).toBe(true);
+    if (!outcome.ok) return;
+
+    // The assertion that catches the incremental-write trap.
+    expect(new TextDecoder().decode(outcome.bytes)).not.toContain(PDF_EXPECTED.author);
+    expect(new TextDecoder().decode(outcome.bytes)).not.toContain(PDF_EXPECTED.title);
+  });
+
+  it('collapses a file with prior revisions to exactly one', async () => {
+    const pdf = buildPdfFixture({ withIncrementalUpdate: true });
+    const outcome = await cleanPdfBytes(pdf);
+
+    expect(outcome.ok, outcome.warnings.join(' ')).toBe(true);
+    if (!outcome.ok) return;
+
+    const after = await collectPdfMetadata(outcome.bytes);
+    expect(after.revisionCount).toBe(1);
+    expect(after.staleMetadata).toBe(false);
+    // The author that survived the incremental "removal" must be gone for real.
+    expect(new TextDecoder().decode(outcome.bytes)).not.toContain(PDF_EXPECTED.author);
+  });
+
+  it('refuses an encrypted PDF rather than mangling it', async () => {
+    const pdf = buildPdfFixture({ withEncryption: true });
+    const outcome = await cleanPdfBytes(pdf);
+    expect(outcome.ok).toBe(false);
+    expect(outcome.warnings.join(' ')).toMatch(/encrypted/i);
+  });
+
+  it('produces a file that still parses', async () => {
+    const pdf = buildPdfFixture();
+    const outcome = await cleanPdfBytes(pdf);
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+
+    const doc = await readPdf(outcome.bytes);
+    expect(doc.degraded).toBe(false);
+    expect(doc.revisions).toHaveLength(1);
+    expect(detectType(outcome.bytes)).toBe('pdf');
+  });
+
+  it('keeps no /Info and no /ID in the output', async () => {
+    const pdf = buildPdfFixture();
+    const outcome = await cleanPdfBytes(pdf);
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+
+    const text = new TextDecoder().decode(outcome.bytes);
+    expect(text).not.toContain('/Info');
+    // /ID fingerprints the original file; carrying it forward would defeat this.
+    expect(text).not.toContain('/ID');
   });
 });

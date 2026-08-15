@@ -41,7 +41,7 @@ export const FORMATS = {
   webp: { label: 'WebP', mime: 'image/webp', extension: 'webp', kind: 'image', support: 'clean' },
   svg: { label: 'SVG', mime: 'image/svg+xml', extension: 'svg', kind: 'text', support: 'clean' },
   markdown: { label: 'Markdown', mime: 'text/markdown', extension: 'md', kind: 'text', support: 'clean' },
-  pdf: { label: 'PDF', mime: 'application/pdf', extension: 'pdf', kind: 'document', support: 'scan' },
+  pdf: { label: 'PDF', mime: 'application/pdf', extension: 'pdf', kind: 'document', support: 'clean' },
 } as const satisfies Record<CleanableFormat, FormatSpec>;
 
 type Registry = typeof FORMATS;
@@ -124,9 +124,10 @@ export const FORMAT_COVERAGE: Record<CleanableFormat, FormatCoverage> = {
       'the cross-reference chain and revision history',
     ],
     limits: [
-      'Inspect-only: NoWatermark does not clean PDFs',
-      'Encrypted PDFs are reported structurally but not read',
+      'Encrypted PDFs are refused rather than modified',
+      'A document whose structure cannot be rebuilt safely is refused, not guessed at',
       'Text content itself is not analysed',
+      'Embedded file attachments are carried over and must be checked separately',
     ],
   },
 };
