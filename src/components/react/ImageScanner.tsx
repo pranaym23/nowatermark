@@ -14,12 +14,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { formatBytes } from '../../lib/bytes';
 import { ACCEPTED_MIME, MAX_FILE_BYTES, SLOW_FILE_BYTES } from '../../lib/config';
-import { countDetected, type ScanResult } from '../../lib/types';
+import { allSignals, countDetected, type ScanResult } from '../../lib/types';
 import { bucket, formatLabel, track } from '../../lib/analytics';
 import type { SignalCategory } from '../../lib/signals';
 import type { CleanPayload } from '../../lib/worker/protocol';
 import { ProcessingFailure, cleanFileBytes, releaseWorker, scanFileBytes } from '../../lib/worker/client';
-import { Button, Notice, OutcomePill, ResultGroup, Spinner } from './ui';
+import { Button, ExposureSummary, Notice, OutcomePill, ResultGroup, Spinner } from './ui';
 
 type Phase = 'idle' | 'reading' | 'scanning' | 'results' | 'cleaning' | 'done' | 'error';
 
@@ -325,6 +325,14 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
               Scanned locally · nothing was uploaded
             </p>
           </div>
+
+          {/*
+            The three axes come first and are never combined into a score
+            (R4). A file can be clean on one and loud on another, and the
+            detector column usually reads "cannot be measured" — a true answer
+            no single number could carry.
+          */}
+          <ExposureSummary signals={allSignals(scan)} />
 
           <div className="flex flex-col gap-4">
             {groups.map((g) => (

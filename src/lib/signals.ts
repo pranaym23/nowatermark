@@ -9,10 +9,69 @@
 
 export type SignalCategory = 'provenance' | 'metadata' | 'privacy' | 'hidden';
 
+/**
+ * The three exposure axes (V2 R4).
+ *
+ * These answer three different questions that users conflate, and that a single
+ * score would destroy:
+ *
+ *   provenance — does this file say where it came from?
+ *   privacy    — does this file say something about *you*?
+ *   detector   — could something still identify this as machine-made?
+ *
+ * A file can be spotless on one axis and loud on another, and averaging them
+ * into one number would be a fabrication. They are reported separately and
+ * never combined. `category` is about where a signal lives in the file; `axis`
+ * is about what it exposes. They are not the same question.
+ */
+export type ExposureAxis = 'provenance' | 'privacy' | 'detector';
+
+export const AXIS_LABEL: Record<ExposureAxis, string> = {
+  provenance: 'Provenance exposure',
+  privacy: 'Privacy exposure',
+  detector: 'Detector risk',
+};
+
+export const AXIS_DESCRIPTION: Record<ExposureAxis, string> = {
+  provenance: 'What this file declares about the tool or model that made it.',
+  privacy: 'What this file reveals about you, your device, and where you were.',
+  detector: 'What might still mark this as machine-made after cleaning.',
+};
+
+/**
+ * The four outcomes a signal can have (V2 R2).
+ *
+ * The last two are the ones that matter. "Detected only" means the signal is
+ * there and we will not pretend we can take it out. "Unable to verify" means we
+ * cannot tell whether it is there at all — that is not a "no", and it will
+ * never become one.
+ */
+export type SignalVerdict =
+  | 'removable_verified'
+  | 'removable_unverified'
+  | 'detect_only'
+  | 'unable_to_verify';
+
+export const VERDICT_LABEL: Record<SignalVerdict, string> = {
+  removable_verified: 'Removable, verified',
+  removable_unverified: 'Removable, not verified',
+  detect_only: 'Detected only',
+  unable_to_verify: 'Unable to verify',
+};
+
+export function verdictOf(s: Pick<SignalSpec, 'detect' | 'remove' | 'verify'>): SignalVerdict {
+  if (!s.detect) return 'unable_to_verify';
+  if (s.remove && s.verify) return 'removable_verified';
+  if (s.remove) return 'removable_unverified';
+  return 'detect_only';
+}
+
 export interface SignalSpec {
   id: string;
   label: string;
   category: SignalCategory;
+  /** Which of the three exposure questions this signal answers (R4). */
+  axis: ExposureAxis;
   /** One-line description shown next to the result. */
   description: string;
   /** Expanded explanation for the disclosure panel (PRD §16). */
@@ -32,6 +91,7 @@ function spec(s: SignalSpec): SignalSpec {
 export const SIGNALS = {
   c2pa: spec({
     id: 'c2pa',
+    axis: 'provenance',
     label: 'C2PA / Content Credentials',
     category: 'provenance',
     description: 'A signed record of where a file came from and how it was edited.',
@@ -43,6 +103,7 @@ export const SIGNALS = {
   }),
   aiGenerator: spec({
     id: 'ai-generator',
+    axis: 'provenance',
     label: 'AI generator metadata',
     category: 'provenance',
     description: 'Tags naming the AI tool or model that produced the image.',
@@ -54,6 +115,7 @@ export const SIGNALS = {
   }),
   synthid: spec({
     id: 'synthid',
+    axis: 'detector',
     label: 'SynthID',
     category: 'provenance',
     description: "Google's imperceptible watermark, embedded in the pixels themselves.",
@@ -65,6 +127,7 @@ export const SIGNALS = {
   }),
   exif: spec({
     id: 'exif',
+    axis: 'privacy',
     label: 'EXIF',
     category: 'metadata',
     description: 'Camera, device, timestamp and settings data.',
@@ -76,6 +139,7 @@ export const SIGNALS = {
   }),
   xmp: spec({
     id: 'xmp',
+    axis: 'provenance',
     label: 'XMP',
     category: 'metadata',
     description: "Adobe's XML metadata block, used by editors and AI tools.",
@@ -87,6 +151,7 @@ export const SIGNALS = {
   }),
   iptc: spec({
     id: 'iptc',
+    axis: 'privacy',
     label: 'IPTC',
     category: 'metadata',
     description: 'Captions, keywords and rights information used by publishers.',
@@ -98,6 +163,7 @@ export const SIGNALS = {
   }),
   embeddedText: spec({
     id: 'embedded-text',
+    axis: 'provenance',
     label: 'Embedded text records',
     category: 'metadata',
     description: 'PNG text chunks and JPEG comments, often holding prompts.',
@@ -109,6 +175,7 @@ export const SIGNALS = {
   }),
   gps: spec({
     id: 'gps',
+    axis: 'privacy',
     label: 'GPS location',
     category: 'privacy',
     description: 'Coordinates recorded when the photo was taken.',
@@ -120,6 +187,7 @@ export const SIGNALS = {
   }),
   timestamp: spec({
     id: 'timestamp',
+    axis: 'privacy',
     label: 'Timestamps',
     category: 'privacy',
     description: 'When the file was created or last modified.',
@@ -131,6 +199,7 @@ export const SIGNALS = {
   }),
   device: spec({
     id: 'device',
+    axis: 'privacy',
     label: 'Device',
     category: 'privacy',
     description: 'Camera or phone make and model.',
@@ -142,6 +211,7 @@ export const SIGNALS = {
   }),
   software: spec({
     id: 'software',
+    axis: 'privacy',
     label: 'Software',
     category: 'privacy',
     description: 'The application that created or last edited the file.',
@@ -153,6 +223,7 @@ export const SIGNALS = {
   }),
   author: spec({
     id: 'author',
+    axis: 'privacy',
     label: 'Author and rights',
     category: 'privacy',
     description: 'Creator name, copyright and ownership fields.',
@@ -164,6 +235,7 @@ export const SIGNALS = {
   }),
   activeContent: spec({
     id: 'active-content',
+    axis: 'privacy',
     label: 'Active content',
     category: 'privacy',
     description: 'Script that runs when the file is opened.',
@@ -175,6 +247,7 @@ export const SIGNALS = {
   }),
   remoteReference: spec({
     id: 'remote-reference',
+    axis: 'privacy',
     label: 'Remote references',
     category: 'privacy',
     description: 'Links to content fetched from another server on open.',
@@ -186,6 +259,7 @@ export const SIGNALS = {
   }),
   priorRevisions: spec({
     id: 'prior-revisions',
+    axis: 'privacy',
     label: 'Earlier revisions',
     category: 'privacy',
     description: 'Previous versions of the document, still inside the file.',
@@ -197,6 +271,7 @@ export const SIGNALS = {
   }),
   hiddenUnicode: spec({
     id: 'hidden-unicode',
+    axis: 'detector',
     label: 'Hidden Unicode characters',
     category: 'hidden',
     description: 'Invisible characters that can carry a payload inside text.',
@@ -208,6 +283,7 @@ export const SIGNALS = {
   }),
   claudeWatermark: spec({
     id: 'claude-watermark',
+    axis: 'detector',
     label: 'Statistical text watermarks',
     category: 'hidden',
     description: 'Watermarks encoded in word choice rather than in characters.',
@@ -219,6 +295,7 @@ export const SIGNALS = {
   }),
   icc: spec({
     id: 'icc',
+    axis: 'privacy',
     label: 'Colour profile (ICC)',
     category: 'metadata',
     description: 'Colour interpretation data — preserved on purpose.',

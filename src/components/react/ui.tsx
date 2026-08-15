@@ -9,6 +9,100 @@ import type { ReactNode } from 'react';
 
 import { STATUS_LABEL, type SignalResult, type SignalStatus } from '../../lib/types';
 import type { SignalOutcome } from '../../lib/clean';
+import {
+  AXIS_DESCRIPTION,
+  AXIS_LABEL,
+  VERDICT_LABEL,
+  signalById,
+  verdictOf,
+  type ExposureAxis,
+  type SignalVerdict,
+} from '../../lib/signals';
+
+/** Axis for a scanned signal, read from signals.ts rather than duplicated. */
+export function axisOf(signal: SignalResult): ExposureAxis {
+  return signalById(signal.id)?.axis ?? 'privacy';
+}
+
+/**
+ * The four-way verdict for a scanned signal (R2).
+ *
+ * Taken from the spec in signals.ts, not from the scan, so a component can
+ * never invent a removal claim. `unable_to_verify` on the result itself wins,
+ * because that is a statement about this particular file.
+ */
+function verdictOfSignal(signal: SignalResult): SignalVerdict {
+  if (signal.status === 'unable_to_verify') return 'unable_to_verify';
+  const spec = signalById(signal.id);
+  return spec ? verdictOf(spec) : 'detect_only';
+}
+
+const VERDICT_EXPLANATION: Record<SignalVerdict, string> = {
+  removable_verified:
+    'This is ordinary metadata. It can be removed, and the removal is confirmed by scanning the cleaned file a second time.',
+  removable_unverified:
+    'This can be removed, but we cannot independently confirm afterwards that it is gone, so we will not claim that it is.',
+  detect_only:
+    'We can find this and show it to you, but we cannot remove it — either because removing it would damage the file, or because it is not ours to remove.',
+  unable_to_verify:
+    'We cannot determine whether this is present at all. That is not the same as it being absent, and it will not become a "no" later.',
+};
+
+export const AXIS_ORDER: readonly ExposureAxis[] = ['privacy', 'provenance', 'detector'];
+
+/**
+ * The three exposure axes, side by side (R4).
+ *
+ * There is deliberately no total, no score and no grade. A file can be spotless
+ * on privacy and loud on provenance, and a single number would erase exactly
+ * the distinction the reader needs. The detector column in particular usually
+ * reads "cannot be measured", which is a true answer that no score could
+ * represent honestly.
+ */
+export function ExposureSummary({ signals }: { signals: SignalResult[] }) {
+  const axes = AXIS_ORDER.map((axis) => {
+    const inAxis = signals.filter((s) => axisOf(s) === axis);
+    return {
+      axis,
+      detected: inAxis.filter((s) => s.status === 'detected').length,
+      unverifiable: inAxis.filter((s) => s.status === 'unable_to_verify').length,
+      total: inAxis.length,
+    };
+  }).filter((a) => a.total > 0);
+
+  if (axes.length === 0) return null;
+
+  return (
+    <section aria-label="Exposure by type" className="nw-panel-grid grid-cols-1 sm:grid-cols-3">
+      {axes.map(({ axis, detected, unverifiable }) => {
+        const void_ = detected === 0 && unverifiable > 0;
+        return (
+          <div
+            key={axis}
+            className={`nw-evidence-panel p-4${void_ ? ' nw-evidence-panel--void' : ''}`}
+          >
+            <p className="nw-panel-label">{AXIS_LABEL[axis]}</p>
+            <p className="mt-1.5 text-2xl font-bold tabular-nums">
+              {void_ ? '—' : detected}
+              {!void_ && (
+                <span className="ms-1.5 text-xs font-medium" style={{ color: 'var(--nw-evidence-muted)' }}>
+                  found
+                </span>
+              )}
+            </p>
+            <p className="mt-1 text-xs" style={{ color: 'var(--nw-evidence-muted)' }}>
+              {void_
+                ? 'Cannot be measured on this device.'
+                : unverifiable > 0
+                  ? `${AXIS_DESCRIPTION[axis]} ${unverifiable} signal${unverifiable === 1 ? '' : 's'} here cannot be checked at all.`
+                  : AXIS_DESCRIPTION[axis]}
+            </p>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
 
 const STATUS_STYLE: Record<SignalStatus, { bg: string; fg: string; glyph: string }> = {
   detected: { bg: 'var(--nw-detected-bg)', fg: 'var(--nw-detected)', glyph: '●' },
@@ -93,13 +187,9 @@ export function SignalRow({ signal }: { signal: SignalResult }) {
         <p>{signal.detail ?? signal.description}</p>
         <p className="mt-2 text-xs">
           <span className="font-medium" style={{ color: 'var(--nw-evidence-text)' }}>
-            Can NoWatermark remove this?{' '}
+            {VERDICT_LABEL[verdictOfSignal(signal)]}.{' '}
           </span>
-          {signal.removable === true
-            ? 'Yes — this is ordinary metadata and removal is verified by re-scanning the result.'
-            : signal.removable === false
-              ? 'No — this is preserved deliberately, because removing it would damage the image.'
-              : 'We cannot tell. NoWatermark makes no claim either way about this signal.'}
+          {VERDICT_EXPLANATION[verdictOfSignal(signal)]}
         </p>
       </div>
     </details>
