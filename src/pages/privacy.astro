@@ -66,29 +66,35 @@ const description =
         use it.
       </p>
       <p>
-        <strong>Google uses text sent through this feature to improve their products, and human
-        reviewers may read it.</strong> That is Google's stated policy for the unpaid tier of the
-        Gemini API, which is what this feature uses. Google says it disconnects the content from the
-        account and API key before a reviewer sees it, but it is still processed, still retained,
-        and still potentially read by a person. It may also be used to train Google's models.
+        This feature uses the <strong>paid tier</strong> of the Gemini API, which matters, because
+        the two tiers are governed by different terms. On the paid tier Google states that it does
+        <strong>not</strong> use prompts or responses to improve its products, and does not use them
+        to train its models. On the unpaid tier it does both, and human reviewers may read the
+        content. We pay for this specifically so the second set of terms does not apply to your
+        text.
       </p>
       <p>
-        If you are in the European Economic Area, Switzerland or the UK, Google applies its
-        paid-tier terms instead, under which prompts are not used for product improvement and are
-        logged only briefly for abuse detection.
+        Google does still log prompts and responses for a limited period — by default up to 55 days
+        — solely to detect abuse of their service and to meet legal obligations. After that the logs
+        are deleted. So the text is not retained indefinitely, but it is not instantaneous either,
+        and during that window it exists on Google's systems rather than only on your device.
       </p>
       <p>
-        The practical advice: <strong>do not put anything confidential, personal or sensitive
-        through the rewrite option.</strong> It is the wrong tool for that. Everything else on this
-        site — every file scan, every clean, the hidden-character checker — never leaves your
-        device, and none of the above applies to any of it.
+        We are being precise about this rather than saying "Google doesn't keep it", because that
+        would not be true. What is true: it is not used to train anything, it is not read for
+        product improvement, and it is deleted.
+      </p>
+      <p>
+        <strong>Even so, this is the one feature on the site where your content leaves your
+        machine.</strong> If a piece of text is genuinely sensitive, the honest advice is not to
+        send it — use the local hidden-character cleaner, which never transmits anything, and accept
+        that statistical watermarks are beyond what any on-device tool can address.
       </p>
       <p>
         Google's terms are at
         <a href="https://ai.google.dev/gemini-api/terms" rel="nofollow noopener" target="_blank"
           >ai.google.dev/gemini-api/terms</a
-        >. If we move this feature to Google's paid tier, the terms change materially in your favour
-        and we will update this page in the same change.
+        >. If the tier or the terms change, this page changes in the same release.
       </p>
       <p>
         We cannot tell you whether a rewrite worked. There is no watermark detector we can run, so

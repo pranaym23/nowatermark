@@ -303,14 +303,13 @@ export default function TextScanner() {
               rewritten text is changed, not confirmed clean.
             </li>
             <li>
-              <strong>Google uses this text to improve their products, and human reviewers may
-              read it.</strong>{' '}
-              That is their stated policy for the tier this uses. Do not send anything
-              confidential, personal or sensitive —{' '}
+              We use Gemini’s <strong>paid</strong> tier, so Google does not train on your text or
+              use it to improve their products. They do log it for up to 55 days to detect abuse,
+              then delete it —{' '}
               <a href="/privacy" className="underline">
-                the details are on our privacy page
+                the full terms are on our privacy page
               </a>
-              .
+              . If a piece of text is genuinely sensitive, don’t send it.
             </li>
           </ul>
 

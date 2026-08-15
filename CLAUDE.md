@@ -28,7 +28,8 @@ pnpm install
 pnpm dev            # http://localhost:4321
 pnpm build          # static output to dist/
 pnpm preview        # serve the build
-pnpm test           # 76 tests, all must pass
+pnpm test           # 157 tests, all must pass
+pnpm typecheck      # tsc --noEmit; nothing else runs it, so run it
 pnpm fixtures       # write sample files with known metadata to tests/fixtures/samples/
 ```
 
@@ -70,8 +71,14 @@ Break any of these and the product stops being what it claims to be.
    inspired; the visual language is panel layout and halftone, not Japanese
    text. Enforce with:
    `rg -lP '[\x{3000}-\x{30FF}\x{4E00}-\x{9FFF}\x{FF00}-\x{FFEF}]' src/`
-7. **76 tests stay green.** A failure means the engine broke — fix the code, not
-   the test.
+7. **157 tests stay green.** A failure means the engine broke — fix the code,
+   not the test. There is no CI: `pnpm build` on Cloudflare Pages is the only
+   automatic gate and it does **not** typecheck, so run `pnpm typecheck` and
+   `pnpm test` yourself before pushing.
+8. **A format is opened in `src/lib/formats.ts` and nowhere else.** The scanner
+   and cleaner tables are total `Record`s over types derived from that registry,
+   so flipping a `support` flag without supplying the implementation is a build
+   error. Do not route around it.
 
 ---
 
@@ -112,7 +119,11 @@ Cloudflare Pages → static HTML/CSS/JS → browser
 
 - `src/lib/` — the engine. **No runtime dependencies.** Hand-written JPEG/PNG/
   WebP container walkers, EXIF reader + minimal TIFF writer, XMP extractor,
-  C2PA/JUMBF detector, hidden-Unicode scanner.
+  C2PA/JUMBF detector, hidden-Unicode scanner, SVG region scanner, Markdown
+  frontmatter locator, and a PDF object/xref parser (`src/lib/pdf/`).
+- `src/lib/formats.ts` — the format registry. Adding a format starts here.
+- `functions/` — the single Pages Function (text-rewrite proxy). Nothing else
+  server-side belongs here.
 - `src/components/react/` — the interactive islands. `ScannerTabs` mounts both
   the image and text scanners on the homepage.
 - `src/content/guides/` — 16 Markdown guides (content collection).
@@ -179,13 +190,16 @@ Two tools, and they differ:
 in the same commit — a false privacy claim is the most damaging possible bug on
 this site.
 
-The same rule covers the text-rewrite feature. `/privacy` currently states the
-**unpaid** Gemini API terms: Google uses submitted text to improve its products
-and **human reviewers may read it**. Moving the key to Google's paid tier changes
-that materially (no product-improvement use, brief abuse-detection logging only)
-and `/privacy`, `/methodology` and the consent panel in `TextScanner.tsx` must all
-be updated in that same commit. EEA/Switzerland/UK users already get the paid
-terms regardless.
+The same rule covers the text-rewrite feature. It runs on the **paid** Gemini
+API tier (confirmed 2026-08-14), where Google does not use prompts or responses
+to improve its products or train models, and logs them for up to 55 days solely
+for abuse detection. **Dropping to the unpaid tier would reverse both of those**
+— unpaid content is used for training and human reviewers may read it — so the
+tier is a privacy commitment, not a billing detail.
+
+Three surfaces state these terms and must move together in one commit:
+`/privacy`, `/methodology`, and the consent panel in
+`src/components/react/TextScanner.tsx`.
 
 Verified: GA sends `page_view` only. Clicking the download link does **not**
 send a `file_download` event, because the href is a `blob:` URL with no
@@ -221,6 +235,36 @@ Enhanced Measurement would make it robust.
   stay page-level and carry nothing file-derived.
 - **SEO backlog:** `.seo/content-gaps.md` has 12 researched article briefs; 6
   are written. The rest are ready to author.
+
+---
+
+## Where the build is (2026-08-14)
+
+Live on `main`, deployed and verified. Briefs and reports in `.briefs/` and
+`.reports/`, numbered 06–10.
+
+**Done:** format registry; SVG scan+clean (including images embedded as data
+URIs); Markdown scan+clean; PDF **inspect-only**; opt-in text rewriting on
+Gemini paid tier with Turnstile.
+
+**Next, in rough priority order:**
+
+1. **Run real PDFs through `collectPdfMetadata`.** The parser has only ever seen
+   fixtures. Brief 09 gates Phase 2 (cleaning) on this — a few hundred
+   real-world files, recording what degrades. Highest-value next action.
+2. **Narrow the C2PA-in-PDF check.** It is currently a raw byte search for
+   `c2pa`/`jumb` and will false-positive on any PDF containing those strings.
+3. **Exercise the rewrite end-to-end in a browser.** Never run for real — no
+   Turnstile challenge can be completed from a terminal.
+4. **PDF Phase 2** — full re-serialise, never an incremental update. The test
+   that matters asserts on raw output bytes, not on a re-scan; a re-scan
+   structurally cannot catch the incremental-write trap.
+5. Rate limiting beyond Turnstile, plus a Google-side budget cap.
+6. Cookie consent (still open, now with a third-party processor in play).
+
+**Tool pages have not been updated for the new formats.** `src/lib/site.ts`
+still describes the 14 tools as image-only. That is SEO copy, not a correctness
+bug, but `/methodology` and the scanner UI have moved ahead of it.
 
 ---
 

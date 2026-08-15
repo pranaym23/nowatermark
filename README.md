@@ -3,8 +3,13 @@
 Free browser-based tools for inspecting and removing metadata and AI-provenance
 information from images and text.
 
-**Nothing is ever uploaded.** Every scan and clean runs on the user's device.
+**No file is ever uploaded.** Every scan and clean runs on the user's device.
 There is no backend, no database and no object storage.
+
+One optional feature crosses the network: rewriting *pasted text* to disturb a
+statistical watermark, which needs a language model we cannot run in a browser.
+It is opt-in per use, shows the exact payload first, and never touches files.
+See "The one exception" below.
 
 ---
 
@@ -38,10 +43,27 @@ Cloudflare Pages  →  static HTML/CSS/JS  →  browser
 ```
 
 The normal user flow makes **no server request that carries file data**: no
-upload endpoint, no Worker, no Pages Function, no database, no external API.
+upload endpoint, no database, no external API for anything file-derived. That
+holds for every format, without exception.
 
 This is verified, not asserted. See `tests/decodable.test.ts` and the offline
 check below.
+
+### The one exception
+
+`functions/api/rewrite.ts` is a Cloudflare Pages Function — the only server-side
+code in the project. It proxies Google's Gemini API so the API key can stay
+secret, and it carries **only text the user explicitly chose to send**: never a
+file, filename, hash or metadata value.
+
+It fails closed. Without `GEMINI_API_KEY` it returns 503; without
+`TURNSTILE_SECRET_KEY` it returns 503 even when the Gemini key is present, so an
+endpoint that spends the key with no bot check cannot run. Without
+`PUBLIC_TURNSTILE_SITE_KEY` the UI is tree-shaken out of the bundle entirely.
+
+It runs on Gemini's **paid** tier, where Google does not train on the content.
+Rewriting is never reported as a removal — there is no detector we can run, so
+the result is `rewritten_unverified`, not "Removed".
 
 ### Verifying it yourself
 
@@ -73,6 +95,9 @@ type. The container is then walked and its metadata blocks extracted:
 | JPEG | APP1 EXIF, APP1 XMP (incl. multi-segment Extended XMP), APP13 IPTC, APP11 JUMBF/C2PA, COM |
 | PNG | `tEXt` / `zTXt` / `iTXt` (inflated), `eXIf`, `tIME`, `caBX` |
 | WebP | `EXIF`, `XMP `, `C2PA`, plus VP8X flags |
+| SVG | `<metadata>`, XMP/RDF, `<title>`, `<desc>`, generator comments, editor namespaces, `<script>` and `on*` handlers, remote refs, **and images embedded as data URIs, which are unpacked and cleaned in place** |
+| Markdown | YAML frontmatter provenance keys, JSON-LD, HTML comments and `<meta>` tags, hidden Unicode |
+| PDF | `/Info` and XMP **across every revision**, prior-revision count, `/Encrypt`, document JavaScript, embedded files — **inspect only, no cleaner** |
 
 ### Cleaning — no recompression
 
@@ -133,7 +158,14 @@ whose `remove` flag is `false`.
   fingerprint. Removal cleans your copy of the file, not anyone else's records.
 - Pixel-embedded watermarks (SynthID) are neither detectable nor removable.
 - Statistical text watermarks are not detectable client-side by anyone.
-- Supported formats: JPG, PNG, WebP. Not AVIF/HEIC/PDF/SVG/audio/video.
+- Scans JPG, PNG, WebP, SVG, Markdown and PDF. Cleans all but PDF.
+  Not AVIF/HEIC/GIF/TIFF/audio/video.
+- **PDF is inspect-only by design.** A PDF is append-only, so a "cleaner" that
+  appends an update leaves the original metadata readable. Doing it correctly
+  means rewriting the whole document; until then we report rather than pretend.
+- Markdown cleaning removes provenance keys only — `title`, `tags` and `layout`
+  drive the user's site build and are left alone. YAML anchors are reported and
+  not rewritten, since deleting one key can silently change another.
 - Max input 25 MB — a browser memory limit, not a server one.
 
 ---

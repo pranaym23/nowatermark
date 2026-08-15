@@ -89,10 +89,12 @@ Fully wired, and the whole thing **fails closed**:
 
 1. **No rate limiting** beyond Turnstile. Budget caps on the Google side are
    worth setting regardless; assume the limiter eventually fails.
-2. **Google's retention terms are not yet recorded.** AI Studio and Vertex differ,
-   and `/privacy` currently says only that Google's terms govern the text once it
-   arrives. That should be replaced with the specific answer before launch —
-   brief 10 asked for it and I could not establish it authoritatively.
+2. ~~Google's retention terms are not recorded.~~ **Resolved.** Running on the
+   **paid** tier: no product-improvement or training use, logs kept up to 55 days
+   (configurable to 7/14/28) for abuse detection only. Stated on `/privacy`,
+   `/methodology` and the consent panel. Zero Data Retention is available on
+   request from Google and would remove even the 55-day window — worth asking for
+   if the feature gets used seriously.
 3. **Cookie consent still does not exist.** Adding a third-party text processor
    to an EU-facing site with no consent flow is a larger exposure than the
    existing GA4 gap. Noted in CLAUDE.md open items; not solved here, as briefed.
