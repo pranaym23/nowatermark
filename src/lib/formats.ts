@@ -77,3 +77,56 @@ export function isScannable(format: string): format is ScannableFormat {
 export function isCleanable(format: string): format is CleanableNowFormat {
   return (CLEANABLE_FORMATS as readonly string[]).includes(format);
 }
+
+/**
+ * Where, inside each format, the scanner actually looks — and what it cannot
+ * reach.
+ *
+ * This exists because "we support PDF" is not a useful claim on its own. A
+ * reader deciding whether to trust the result needs to know which parts of the
+ * container were opened. Keyed over the registry, so adding a format is a build
+ * error until its coverage is described.
+ */
+export interface FormatCoverage {
+  /** Container regions the scanner opens. */
+  inspects: readonly string[];
+  /** Honest statement of what is not covered. Never leave this empty. */
+  limits: readonly string[];
+}
+
+export const FORMAT_COVERAGE: Record<CleanableFormat, FormatCoverage> = {
+  jpeg: {
+    inspects: ['APP1 EXIF', 'APP1 XMP', 'APP13 IPTC/Photoshop', 'APP11 JUMBF (C2PA)', 'COM comments'],
+    limits: ['Pixel-domain watermarks cannot be measured', 'Thumbnails inside EXIF are removed with it'],
+  },
+  png: {
+    inspects: ['tEXt, zTXt and iTXt chunks', 'eXIf chunk', 'XMP in iTXt', 'caBX chunk (C2PA)'],
+    limits: ['Pixel-domain watermarks cannot be measured'],
+  },
+  webp: {
+    inspects: ['EXIF chunk', 'XMP chunk', 'C2PA chunk', 'RIFF container structure'],
+    limits: ['Pixel-domain watermarks cannot be measured'],
+  },
+  svg: {
+    inspects: ['XML comments', 'metadata and RDF elements', 'script elements and event handlers', 'external references', 'embedded data: URI images'],
+    limits: ['An embedded raster image is scanned, but its own pixel content is not analysed'],
+  },
+  markdown: {
+    inspects: ['YAML frontmatter', 'HTML comments', 'hidden Unicode in body text'],
+    limits: ['Linked and transcluded files are not followed'],
+  },
+  pdf: {
+    inspects: [
+      'the /Info dictionary of every revision, not only the newest',
+      'XMP packets anywhere in the file',
+      'document JavaScript and embedded files',
+      'C2PA associated files and JUMBF containers',
+      'the cross-reference chain and revision history',
+    ],
+    limits: [
+      'Inspect-only: NoWatermark does not clean PDFs',
+      'Encrypted PDFs are reported structurally but not read',
+      'Text content itself is not analysed',
+    ],
+  },
+};

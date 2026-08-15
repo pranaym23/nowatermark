@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "fixtures": "node --experimental-strip-types tests/fixtures/generate.ts"
+    "fixtures": "node --experimental-strip-types tests/fixtures/generate.ts",
+    "pdf:audit": "node scripts/run-ts.mjs scripts/pdf-audit.ts"
   },
   "dependencies": {
     "astro": "^7.2.2"
@@ -23,6 +24,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "esbuild": "^0.28.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3",

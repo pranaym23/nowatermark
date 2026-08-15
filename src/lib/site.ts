@@ -55,7 +55,7 @@ export const TOOLS: ToolDef[] = [
     slug: '/ai-watermark-checker',
     title: 'AI Watermark Checker — Check Images for AI Metadata | NoWatermark',
     description:
-      'Check any JPG, PNG or WebP for AI provenance data, Content Credentials, generator metadata and hidden EXIF. Runs entirely in your browser.',
+      'Check a JPG, PNG, WebP, SVG, Markdown or PDF for AI provenance data, Content Credentials, generator metadata and hidden EXIF. Runs entirely in your browser.',
     h1: 'AI Watermark Checker',
     intro:
       'Find out what an image says about where it came from. This checker reads the provenance and metadata records inside a file and explains what each one means.',
@@ -709,6 +709,7 @@ export const FOOTER_LEARN: FooterLink[] = [
 ];
 
 export const FOOTER_SITE: FooterLink[] = [
+  { href: '/capabilities', label: 'Capabilities' },
   { href: '/methodology', label: 'Methodology' },
   { href: '/privacy', label: 'Privacy' },
   { href: '/terms', label: 'Terms' },

@@ -48,8 +48,13 @@ const current = Astro.url.pathname.replace(/\/$/, '');
         aria-current={current.startsWith('/guides') ? 'page' : undefined}>Guides</a
       >
       <a
-        href="/methodology"
+        href="/capabilities"
         class="hidden px-3 py-1.5 hover:bg-[var(--nw-spot-soft)] sm:block"
+        aria-current={current === '/capabilities' ? 'page' : undefined}>Capabilities</a
+      >
+      <a
+        href="/methodology"
+        class="hidden px-3 py-1.5 hover:bg-[var(--nw-spot-soft)] md:block"
         aria-current={current === '/methodology' ? 'page' : undefined}>Methodology</a
       >
       <a

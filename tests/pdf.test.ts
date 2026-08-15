@@ -7,7 +7,7 @@ import { readPdf } from '../src/lib/pdf/document';
 import { PdfLexer, textOf } from '../src/lib/pdf/lexer';
 import { scanImage } from '../src/lib/scan';
 import { allSignals, type ScanResult } from '../src/lib/types';
-import { PDF_EXPECTED, buildPdfFixture } from './fixtures/build';
+import { PDF_EXPECTED, buildJumbfSuperbox, buildPdfFixture } from './fixtures/build';
 
 const input = (name = 'doc.pdf', size = 0) => ({ name, type: 'application/pdf', size });
 
@@ -143,6 +143,63 @@ describe('scanning PDF', () => {
       const pdf = buildPdfFixture({ withIncrementalUpdate: true });
       const result = await scanImage(pdf, input('doc.pdf', pdf.length));
       expect(result.warnings.join(' ')).toMatch(/still (in the file|present)/i);
+    });
+  });
+
+  /*
+   * C2PA presence used to be a raw byte search for "c2pa" or "jumb" across the
+   * whole file. Four ASCII bytes are not a signature: a compressed stream hits
+   * them by chance, and any PDF that merely *writes about* Content Credentials
+   * claims to carry them. Reporting provenance that is not there is the worst
+   * class of bug this product can ship, so these tests pin the shape.
+   */
+  describe('C2PA detection is structural, not a byte search', () => {
+    const asBytes = (s: string) => new TextEncoder().encode(s);
+
+    it('ignores a PDF that only mentions c2pa and jumb in its text', async () => {
+      const pdf = buildPdfFixture({
+        trailingBytes: asBytes('\n% notes on c2pa manifests and jumb boxes\n'),
+      });
+      const meta = await collectPdfMetadata(pdf);
+      expect(meta.hasC2pa).toBe(false);
+    });
+
+    it('ignores a bare jumb marker with no box around it', async () => {
+      const meta = await collectPdfMetadata(
+        buildPdfFixture({ trailingBytes: asBytes('jumbjumbjumb') }),
+      );
+      expect(meta.hasC2pa).toBe(false);
+    });
+
+    it('ignores a box whose declared length runs past the end of the file', async () => {
+      const box = buildJumbfSuperbox();
+      new DataView(box.buffer).setUint32(0, 0x7fffffff);
+      const meta = await collectPdfMetadata(buildPdfFixture({ trailingBytes: box }));
+      expect(meta.hasC2pa).toBe(false);
+    });
+
+    it('ignores a jumb box whose first child is not a description box', async () => {
+      const box = buildJumbfSuperbox();
+      box.set(asBytes('junk'), 12);
+      const meta = await collectPdfMetadata(buildPdfFixture({ trailingBytes: box }));
+      expect(meta.hasC2pa).toBe(false);
+    });
+
+    it('finds a well-formed JUMBF superbox', async () => {
+      const meta = await collectPdfMetadata(
+        buildPdfFixture({ trailingBytes: buildJumbfSuperbox() }),
+      );
+      expect(meta.hasC2pa).toBe(true);
+    });
+
+    it('finds a manifest declared as an associated file', async () => {
+      const meta = await collectPdfMetadata(buildPdfFixture({ withC2paAssociatedFile: true }));
+      expect(meta.hasC2pa).toBe(true);
+    });
+
+    it('does not report C2PA for an ordinary PDF', async () => {
+      const meta = await collectPdfMetadata(buildPdfFixture());
+      expect(meta.hasC2pa).toBe(false);
     });
   });
 });

@@ -183,6 +183,35 @@
     text-decoration: underline;
     text-underline-offset: 2px;
   }
+  /*
+   * Code blocks. Syntax highlighting is off (see astro.config.ts), so these are
+   * plain <pre><code> and take their colours from tokens like everything else,
+   * which is what keeps them legible in both themes.
+   *
+   * The guides use them only for structural diagrams, which are wide. They must
+   * scroll inside their own box — never widen the page.
+   */
+  .nw-content pre {
+    background: var(--nw-surface-muted, var(--nw-paper));
+    border: 1px solid var(--nw-rule);
+    color: var(--nw-text);
+    font-size: .8125rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    padding: 1rem;
+  }
+  .nw-content pre code {
+    background: none;
+    font-size: inherit;
+    padding: 0;
+    white-space: pre;
+  }
+  .nw-content :not(pre) > code {
+    background: var(--nw-surface-muted, var(--nw-paper));
+    border: 1px solid var(--nw-rule);
+    font-size: .875em;
+    padding: .1em .3em;
+  }
   .nw-content ul,
   .nw-content ol {
     padding-inline-start: 1.3em;
@@ -223,6 +252,19 @@
   .nw-content th {
     background-color: var(--nw-surface-muted);
     font-weight: 600;
+  }
+  /*
+   * On a phone, `width: 100%` keeps a wide table from breaking the layout, but
+   * it does it by crushing the columns. Let the table take its natural width
+   * and scroll inside itself instead — the page still must not move sideways.
+   */
+  @media (max-width: 639px) {
+    .nw-content table {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      width: max-content;
+    }
   }
 
   /* Wide content must scroll inside itself, never the page. */
@@ -289,6 +331,22 @@
   .nw-intake { border: 2px dashed var(--nw-ink); border-radius: 0; background: var(--nw-paper); }
   .nw-page-header { border-bottom: 5px solid var(--nw-gutter); }
   .nw-calm-header { border-inline-start: 5px solid var(--nw-gutter); padding-inline-start: 1.25rem; }
+
+  /*
+   * Evidence block and last-tested marker. Deliberately quiet: on the long-form
+   * pages readability beats the concept, and a citation list that shouts is a
+   * citation list nobody reads. The rule above it does the separating.
+   */
+  .nw-evidence {
+    border-top: 3px solid var(--nw-gutter);
+    padding-top: 1.5rem;
+  }
+  .nw-evidence a { color: var(--nw-text); }
+  .nw-last-tested {
+    border-inline-start: 3px solid var(--nw-spot);
+    color: var(--nw-text-muted);
+    padding-inline-start: .75rem;
+  }
 
   @media (max-width: 639px) {
     .nw-panel-grid { gap: 4px; }

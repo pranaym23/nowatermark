@@ -8,6 +8,7 @@
  * telling a user their file is clean while their name is still in it.
  */
 
+import { ascii, u32be } from '../bytes';
 import { decodeStream, readPdf, resolve, type PdfDocument } from '../pdf/document';
 import { dictOf, indexOfAsciiIn, nameOf, textOf, type PdfValue } from '../pdf/lexer';
 
@@ -103,6 +104,64 @@ function findXmpPackets(bytes: Uint8Array): string[] {
   return out;
 }
 
+/**
+ * Structural search for a JUMBF superbox.
+ *
+ * A bare search for the ASCII `jumb` is not a detection. It is four bytes: a
+ * compressed stream of any size hits it by chance, and the literal string
+ * appears in every PDF that merely *discusses* C2PA — a page of our own
+ * documentation, exported to PDF, would report itself as carrying Content
+ * Credentials.
+ *
+ * So require the ISO-BMFF box shape instead. A JUMBF superbox is a 4-byte
+ * big-endian length, the type `jumb`, and then, as its first child, a
+ * description box typed `jumd`. Three independent constraints — a plausible
+ * length that fits inside the file, and two type strings at fixed offsets from
+ * each other — is a signature rather than a coincidence.
+ */
+function findJumbfSuperbox(bytes: Uint8Array): boolean {
+  let from = 0;
+  for (let guard = 0; guard < 4096; guard++) {
+    const at = indexOfAsciiIn(bytes, 'jumb', from);
+    if (at < 0) return false;
+    from = at + 4;
+
+    // The length field sits immediately before the type.
+    if (at < 4) continue;
+    const start = at - 4;
+    const length = u32be(bytes, start);
+    // A superbox holds at least its own header plus a description box header.
+    if (length < 16 || start + length > bytes.length) continue;
+    // First child must be the description box.
+    if (at + 12 > bytes.length) continue;
+    if (ascii(bytes, at + 8, 4) !== 'jumd') continue;
+
+    return true;
+  }
+  return false;
+}
+
+/**
+ * The C2PA spec attaches a PDF manifest as an associated file whose
+ * /AFRelationship is /C2PA_Manifest. That is a declaration in the object graph,
+ * so unlike a byte search it cannot be triggered by page content.
+ */
+async function hasC2paAssociatedFile(
+  doc: PdfDocument,
+  root: Map<string, PdfValue>,
+  revision: number,
+): Promise<boolean> {
+  const af = await resolve(doc, root.get('AF'), revision);
+  if (!af) return false;
+
+  const specs = af.kind === 'array' ? af.items : [af];
+  for (const spec of specs.slice(0, 64)) {
+    const dict = dictOf((await resolve(doc, spec, revision)) ?? undefined);
+    if (nameOf(dict?.get('AFRelationship')) === 'C2PA_Manifest') return true;
+  }
+  return false;
+}
+
 async function walkForFeatures(doc: PdfDocument): Promise<{
   js: boolean;
   embedded: boolean;
@@ -129,13 +188,13 @@ async function walkForFeatures(doc: PdfDocument): Promise<{
       const form = dictOf((await resolve(doc, root.get('AcroForm'), index)) ?? undefined);
       if (form?.has('XFA')) js = true;
     }
+
+    if (!c2pa && (await hasC2paAssociatedFile(doc, root, index))) c2pa = true;
   }
 
-  // C2PA in a PDF lives in a /Metadata-adjacent JUMBF payload; the marker is
-  // reliable enough for a presence report.
-  if (indexOfAsciiIn(doc.bytes, 'c2pa', 0) >= 0 || indexOfAsciiIn(doc.bytes, 'jumb', 0) >= 0) {
-    c2pa = true;
-  }
+  // Fall back to the container shape for producers that embed the manifest
+  // without declaring the association.
+  if (!c2pa && findJumbfSuperbox(doc.bytes)) c2pa = true;
 
   return { js, embedded, c2pa };
 }

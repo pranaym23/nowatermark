@@ -14,6 +14,21 @@ export default defineConfig({
   trailingSlash: 'never',
   integrations: [react(), sitemap()],
   /*
+   * Shiki is off deliberately. It writes its theme as a hard-coded inline
+   * style — `background-color:#24292e;color:#e1e4e8` — which pins code blocks
+   * to one dark palette in both themes and puts raw hex into the page, both of
+   * which the Tantei spec forbids. It is also the source of the CSP warning
+   * Astro prints on every build.
+   *
+   * Nothing on this site needs highlighting: the only code blocks are plain
+   * structural diagrams in the guides. Turning it off emits bare
+   * `<pre><code>`, which global.css then styles from tokens like everything
+   * else.
+   */
+  markdown: {
+    syntaxHighlight: false,
+  },
+  /*
    * Astro emits small inline module scripts to hydrate islands. A hand-written
    * `script-src 'self'` in public/_headers blocked them in production and the
    * scanner never booted — a bug invisible locally, because `astro preview`

@@ -4,6 +4,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AdSlot from '../../components/AdSlot.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Evidence from '../../components/Evidence.astro';
 import Faq from '../../components/Faq.astro';
 import RelatedLinks from '../../components/RelatedLinks.astro';
 import { SITE, toolBySlug } from '../../lib/site';
@@ -43,6 +44,13 @@ const readable = (value: Date) =>
     timeZone: 'UTC',
   });
 
+// The byline is a person only when frontmatter names one; otherwise the
+// organisation carries it. We do not invent authors. See build plan A4.
+const authorIsOrganisation = guide.data.author === SITE.name;
+const author = authorIsOrganisation
+  ? { '@type': 'Organization', name: SITE.name, url: SITE.url }
+  : { '@type': 'Person', name: guide.data.author };
+
 const schema: unknown[] = [
   {
     '@context': 'https://schema.org',
@@ -51,9 +59,12 @@ const schema: unknown[] = [
     description: guide.data.description,
     datePublished: isoDate(guide.data.publishDate),
     dateModified: isoDate(guide.data.updatedDate ?? guide.data.publishDate),
-    author: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    author,
     publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
     mainEntityOfPage: new URL(path, SITE.url).href,
+    ...(guide.data.sources.length > 0
+      ? { citation: guide.data.sources.map((s) => ({ '@type': 'CreativeWork', name: s.title, url: s.url })) }
+      : {}),
   },
   {
     '@context': 'https://schema.org',
@@ -94,7 +105,10 @@ if (guide.data.faq.length > 0) {
       <h1 class="text-3xl font-bold">{guide.data.title}</h1>
       <p class="mt-3 text-lg nw-muted">{guide.data.description}</p>
       <p class="mt-3 text-xs nw-muted">
-        Published <time datetime={isoDate(guide.data.publishDate)}>{readable(guide.data.publishDate)}</time>
+        By {guide.data.author}
+        {guide.data.reviewer && ` · Reviewed by ${guide.data.reviewer}`}
+        {' · Published '}
+        <time datetime={isoDate(guide.data.publishDate)}>{readable(guide.data.publishDate)}</time>
         {
           guide.data.updatedDate && (
             <>
@@ -104,11 +118,27 @@ if (guide.data.faq.length > 0) {
           )
         }
       </p>
+      {
+        guide.data.lastTested && (
+          <p class="nw-last-tested mt-3 text-xs">
+            Last tested{' '}
+            <time datetime={isoDate(guide.data.lastTested)}>{readable(guide.data.lastTested)}</time>.
+            Detectors, platforms and file formats change. If this date is old, treat the result as
+            history rather than as current behaviour.
+          </p>
+        )
+      }
     </header>
 
     <div class="nw-content mt-8">
       <Content />
     </div>
+
+    <Evidence
+      sources={guide.data.sources}
+      changelog={guide.data.changelog}
+      lastTested={guide.data.lastTested}
+    />
 
     <AdSlot position="article-end" />
 
