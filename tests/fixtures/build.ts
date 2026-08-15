@@ -631,18 +631,36 @@ export interface PdfFixtureOptions {
   withIncrementalUpdate?: boolean;
   withEncryption?: boolean;
   withJavaScript?: boolean;
+  /** Declare a C2PA manifest the way the spec does: an associated file. */
+  withC2paAssociatedFile?: boolean;
+  /** Append trailing bytes after %%EOF, for false-positive tests. */
+  trailingBytes?: Uint8Array;
   info?: string;
 }
 
 export function buildPdfFixture(opts: PdfFixtureOptions = {}): Uint8Array {
-  const { withIncrementalUpdate = false, withEncryption = false, withJavaScript = false } = opts;
+  const {
+    withIncrementalUpdate = false,
+    withEncryption = false,
+    withJavaScript = false,
+    withC2paAssociatedFile = false,
+  } = opts;
 
   const header = '%PDF-1.4\n';
   // Built before offsets are computed: patching it afterwards would shift every
   // object and invalidate the xref table we are about to write.
-  const catalog = withJavaScript
-    ? '<< /Type /Catalog /Pages 2 0 R /OpenAction << /S /JavaScript /JS (app.alert\\(1\\)) >> >>'
-    : '<< /Type /Catalog /Pages 2 0 R >>';
+  const catalogBits = ['/Type /Catalog', '/Pages 2 0 R'];
+  if (withJavaScript) {
+    catalogBits.push('/OpenAction << /S /JavaScript /JS (app.alert\\(1\\)) >>');
+  }
+  if (withC2paAssociatedFile) {
+    // Held inline rather than as an indirect object so the fixture's xref
+    // arithmetic stays a fixed five entries.
+    catalogBits.push(
+      '/AF [<< /Type /Filespec /AFRelationship /C2PA_Manifest /F (manifest.c2pa) >>]',
+    );
+  }
+  const catalog = `<< ${catalogBits.join(' ')} >>`;
   const body = pdfBody(header.length, opts.info ?? FULL_INFO, catalog);
 
   const xrefAt = header.length + body.text.length;
@@ -673,5 +691,29 @@ export function buildPdfFixture(opts: PdfFixtureOptions = {}): Uint8Array {
     pdf += cleaned + updateXref + updateTrailer;
   }
 
-  return new TextEncoder().encode(pdf);
+  const encoded = new TextEncoder().encode(pdf);
+  if (!opts.trailingBytes) return encoded;
+
+  const out = new Uint8Array(encoded.length + opts.trailingBytes.length);
+  out.set(encoded, 0);
+  out.set(opts.trailingBytes, encoded.length);
+  return out;
+}
+
+/**
+ * A syntactically real JUMBF superbox: length, type `jumb`, and a `jumd`
+ * description box as its first child. Used to prove the detector wants the box
+ * shape and not the four ASCII bytes.
+ */
+export function buildJumbfSuperbox(): Uint8Array {
+  const descriptionLength = 8 + 16; // header + a UUID
+  const total = 8 + descriptionLength;
+
+  const box = new Uint8Array(total);
+  const view = new DataView(box.buffer);
+  view.setUint32(0, total);
+  box.set(new TextEncoder().encode('jumb'), 4);
+  view.setUint32(8, descriptionLength);
+  box.set(new TextEncoder().encode('jumd'), 12);
+  return box;
 }

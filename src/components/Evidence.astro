@@ -1,0 +1,101 @@
+---
+/**
+ * Sources, test date and change history for a page (V2 R22-R24).
+ *
+ * The reason this is a component and not prose in each article: a claim on this
+ * site is supposed to be traceable, and traceability that depends on each
+ * author remembering to add a list is not traceability. The schema requires the
+ * data for `lab` and `comparison` pages; this renders it in one shape
+ * everywhere so a reader learns where to look once.
+ */
+
+interface Source {
+  title: string;
+  url: string;
+  accessed: Date;
+}
+
+interface Change {
+  date: Date;
+  note: string;
+}
+
+interface Props {
+  sources?: Source[];
+  changelog?: Change[];
+  lastTested?: Date;
+}
+
+const { sources = [], changelog = [], lastTested } = Astro.props;
+
+const isoDate = (value: Date) => value.toISOString();
+// Frontmatter dates are calendar days parsed as UTC midnight. Format in UTC or
+// a build machine west of Greenwich renders the previous day.
+const readable = (value: Date) =>
+  value.toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+
+const hostOf = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+};
+
+const ordered = [...changelog].sort((a, b) => b.date.getTime() - a.date.getTime());
+---
+
+{
+  (sources.length > 0 || ordered.length > 0 || lastTested) && (
+    <section class="nw-evidence mt-14">
+      <h2 class="text-lg font-semibold">Evidence</h2>
+
+      {sources.length > 0 && (
+        <div class="mt-4">
+          <h3 class="text-sm font-semibold">Sources</h3>
+          <ol class="mt-2 space-y-2">
+            {sources.map((item) => (
+              <li class="text-sm">
+                <a href={item.url} rel="nofollow noopener" class="underline">
+                  {item.title}
+                </a>
+                <span class="nw-muted">
+                  {' — '}
+                  {hostOf(item.url)}, read{' '}
+                  <time datetime={isoDate(item.accessed)}>{readable(item.accessed)}</time>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {ordered.length > 0 && (
+        <div class="mt-6">
+          <h3 class="text-sm font-semibold">Change history</h3>
+          <ul class="mt-2 space-y-2">
+            {ordered.map((item) => (
+              <li class="text-sm">
+                <time datetime={isoDate(item.date)} class="nw-muted">
+                  {readable(item.date)}
+                </time>
+                {' — '}
+                {item.note}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p class="mt-6 text-xs nw-muted">
+        Found something wrong on this page? Corrections are welcome and get a dated entry in
+        the change history above — <a href="/about" class="underline">get in touch</a>.
+      </p>
+    </section>
+  )
+}
