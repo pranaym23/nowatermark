@@ -1,7 +1,7 @@
 # BRIEF 02 — Logo concepts for NoWatermark
 
 **Agent:** Codex, gpt-5.6-terra, medium effort, using the `imagegen` skill
-**Repo:** `/Users/pranaymehrotra/agent/nw`
+**Repo:** the repository root
 
 ---
 

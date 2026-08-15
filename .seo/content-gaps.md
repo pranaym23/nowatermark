@@ -45,8 +45,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Verify What Metadata Remains on an Instagram Image Yourself**
 
 #### Internal Links to Include:
-- **Tools:** [`/exif-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L620), [`/ai-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L54), [`/c2pa-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L438)
-- **Guides:** [`/guides/how-to-remove-exif-data`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-remove-exif-data.md), [`/guides/what-is-c2pa`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/what-is-c2pa.md)
+- **Tools:** [`/exif-remover`](src/lib/site.ts#L620), [`/ai-watermark-checker`](src/lib/site.ts#L54), [`/c2pa-checker`](src/lib/site.ts#L438)
+- **Guides:** [`/guides/how-to-remove-exif-data`](src/content/guides/how-to-remove-exif-data.md), [`/guides/what-is-c2pa`](src/content/guides/what-is-c2pa.md)
 
 #### FAQ Questions to Answer:
 - **Q: Can someone get my home address from a photo I posted on Instagram?**  
@@ -76,8 +76,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Extract or Strip Stable Diffusion Metadata Locally**
 
 #### Internal Links to Include:
-- **Tools:** [`/ai-metadata-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L574), [`/ai-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L54)
-- **Guides:** [`/guides/how-to-check-ai-image-metadata`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-check-ai-image-metadata.md), [`/guides/can-you-remove-ai-watermarks`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/can-you-remove-ai-watermarks.md)
+- **Tools:** [`/ai-metadata-remover`](src/lib/site.ts#L574), [`/ai-watermark-checker`](src/lib/site.ts#L54)
+- **Guides:** [`/guides/how-to-check-ai-image-metadata`](src/content/guides/how-to-check-ai-image-metadata.md), [`/guides/can-you-remove-ai-watermarks`](src/content/guides/can-you-remove-ai-watermarks.md)
 
 #### FAQ Questions to Answer:
 - **Q: Does a Stable Diffusion PNG contain my full prompt?**  
@@ -107,8 +107,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Verify Your Photo is Free of GPS Data**
 
 #### Internal Links to Include:
-- **Tools:** [`/exif-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L620), [`/ai-metadata-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L574)
-- **Guides:** [`/guides/how-to-remove-exif-data`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-remove-exif-data.md)
+- **Tools:** [`/exif-remover`](src/lib/site.ts#L620), [`/ai-metadata-remover`](src/lib/site.ts#L574)
+- **Guides:** [`/guides/how-to-remove-exif-data`](src/content/guides/how-to-remove-exif-data.md)
 
 #### FAQ Questions to Answer:
 - **Q: Does iPhone automatically remove GPS location when emailing photos?**  
@@ -138,8 +138,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **What You Can Genuinely Clean From Gemini Images**
 
 #### Internal Links to Include:
-- **Tools:** [`/synthid-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L381), [`/synthid-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L338), [`/ai-metadata-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L574)
-- **Guides:** [`/guides/what-is-synthid`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/what-is-synthid.md), [`/guides/can-you-remove-ai-watermarks`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/can-you-remove-ai-watermarks.md), [`/guides/c2pa-vs-synthid`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/c2pa-vs-synthid.md)
+- **Tools:** [`/synthid-remover`](src/lib/site.ts#L381), [`/synthid-checker`](src/lib/site.ts#L338), [`/ai-metadata-remover`](src/lib/site.ts#L574)
+- **Guides:** [`/guides/what-is-synthid`](src/content/guides/what-is-synthid.md), [`/guides/can-you-remove-ai-watermarks`](src/content/guides/can-you-remove-ai-watermarks.md), [`/guides/c2pa-vs-synthid`](src/content/guides/c2pa-vs-synthid.md)
 
 #### FAQ Questions to Answer:
 - **Q: Can any online tool delete SynthID from an image?**  
@@ -169,8 +169,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **Verifying Your ComfyUI Output Image is Clean**
 
 #### Internal Links to Include:
-- **Tools:** [`/ai-metadata-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L574), [`/ai-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L54)
-- **Guides:** [`/guides/how-to-check-ai-image-metadata`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-check-ai-image-metadata.md), [`/guides/stable-diffusion-png-metadata`](file:///Users/pranaymehrotra/agent/nw/.seo/content-gaps.md#brief-2-how-to-extract-stable-diffusion-prompts-and-settings-from-png-images)
+- **Tools:** [`/ai-metadata-remover`](src/lib/site.ts#L574), [`/ai-watermark-checker`](src/lib/site.ts#L54)
+- **Guides:** [`/guides/how-to-check-ai-image-metadata`](src/content/guides/how-to-check-ai-image-metadata.md), [`/guides/stable-diffusion-png-metadata`](.seo/content-gaps.md#brief-2-how-to-extract-stable-diffusion-prompts-and-settings-from-png-images)
 
 #### FAQ Questions to Answer:
 - **Q: Does ComfyUI save my entire workspace inside the generated image?**  
@@ -200,8 +200,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Check and Clean Midjourney Metadata Yourself**
 
 #### Internal Links to Include:
-- **Tools:** [`/ai-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L54), [`/ai-metadata-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L574), [`/c2pa-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L438)
-- **Guides:** [`/guides/how-to-check-ai-image-metadata`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-check-ai-image-metadata.md), [`/guides/what-is-c2pa`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/what-is-c2pa.md)
+- **Tools:** [`/ai-watermark-checker`](src/lib/site.ts#L54), [`/ai-metadata-remover`](src/lib/site.ts#L574), [`/c2pa-checker`](src/lib/site.ts#L438)
+- **Guides:** [`/guides/how-to-check-ai-image-metadata`](src/content/guides/how-to-check-ai-image-metadata.md), [`/guides/what-is-c2pa`](src/content/guides/what-is-c2pa.md)
 
 #### FAQ Questions to Answer:
 - **Q: Does Midjourney put a visible logo on generated pictures?**  
@@ -231,8 +231,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Verify Discord File Metadata Before and After Sending**
 
 #### Internal Links to Include:
-- **Tools:** [`/exif-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L620), [`/ai-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L54)
-- **Guides:** [`/guides/how-to-remove-exif-data`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-remove-exif-data.md), [`/guides/does-instagram-remove-exif`](file:///Users/pranaymehrotra/agent/nw/.seo/content-gaps.md#brief-1-does-instagram-remove-exif-data-and-location-from-photos)
+- **Tools:** [`/exif-remover`](src/lib/site.ts#L620), [`/ai-watermark-checker`](src/lib/site.ts#L54)
+- **Guides:** [`/guides/how-to-remove-exif-data`](src/content/guides/how-to-remove-exif-data.md), [`/guides/does-instagram-remove-exif`](.seo/content-gaps.md#brief-1-does-instagram-remove-exif-data-and-location-from-photos)
 
 #### FAQ Questions to Answer:
 - **Q: Is my location safe when I upload a photo to Discord?**  
@@ -262,8 +262,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **Comparing macOS Native Stripping vs Container Rewriting**
 
 #### Internal Links to Include:
-- **Tools:** [`/exif-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L620), [`/ai-metadata-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L574)
-- **Guides:** [`/guides/how-to-remove-exif-data`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-remove-exif-data.md), [`/guides/how-to-remove-location-from-iphone-photos`](file:///Users/pranaymehrotra/agent/nw/.seo/content-gaps.md#brief-3-how-to-remove-location-data-gps-from-iphone-photos)
+- **Tools:** [`/exif-remover`](src/lib/site.ts#L620), [`/ai-metadata-remover`](src/lib/site.ts#L574)
+- **Guides:** [`/guides/how-to-remove-exif-data`](src/content/guides/how-to-remove-exif-data.md), [`/guides/how-to-remove-location-from-iphone-photos`](.seo/content-gaps.md#brief-3-how-to-remove-location-data-gps-from-iphone-photos)
 
 #### FAQ Questions to Answer:
 - **Q: Does Mac Preview allow removing EXIF data?**  
@@ -293,8 +293,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Detect and Remove Hidden Unicode Locally in Your Browser**
 
 #### Internal Links to Include:
-- **Tools:** [`/claude-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L245), [`/claude-watermark-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L298)
-- **Guides:** [`/guides/hidden-unicode-characters`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/hidden-unicode-characters.md), [`/guides/does-claude-watermark-text`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/does-claude-watermark-text.md)
+- **Tools:** [`/claude-watermark-checker`](src/lib/site.ts#L245), [`/claude-watermark-remover`](src/lib/site.ts#L298)
+- **Guides:** [`/guides/hidden-unicode-characters`](src/content/guides/hidden-unicode-characters.md), [`/guides/does-claude-watermark-text`](src/content/guides/does-claude-watermark-text.md)
 
 #### FAQ Questions to Answer:
 - **Q: Why does my pasted text contain invisible characters?**  
@@ -324,8 +324,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Check or Strip DALL-E 3 Metadata Yourself**
 
 #### Internal Links to Include:
-- **Tools:** [`/chatgpt-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L157), [`/chatgpt-watermark-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L204), [`/c2pa-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L438)
-- **Guides:** [`/guides/does-chatgpt-watermark-images`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/does-chatgpt-watermark-images.md), [`/guides/what-is-c2pa`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/what-is-c2pa.md)
+- **Tools:** [`/chatgpt-watermark-checker`](src/lib/site.ts#L157), [`/chatgpt-watermark-remover`](src/lib/site.ts#L204), [`/c2pa-checker`](src/lib/site.ts#L438)
+- **Guides:** [`/guides/does-chatgpt-watermark-images`](src/content/guides/does-chatgpt-watermark-images.md), [`/guides/what-is-c2pa`](src/content/guides/what-is-c2pa.md)
 
 #### FAQ Questions to Answer:
 - **Q: Does DALL-E 3 put a visible watermark on photos?**  
@@ -355,8 +355,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Detect or Clear IPTC AI Tags from Your Images**
 
 #### Internal Links to Include:
-- **Tools:** [`/ai-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L54), [`/ai-metadata-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L574)
-- **Guides:** [`/guides/how-to-check-ai-image-metadata`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-check-ai-image-metadata.md), [`/guides/does-chatgpt-watermark-images`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/does-chatgpt-watermark-images.md)
+- **Tools:** [`/ai-watermark-checker`](src/lib/site.ts#L54), [`/ai-metadata-remover`](src/lib/site.ts#L574)
+- **Guides:** [`/guides/how-to-check-ai-image-metadata`](src/content/guides/how-to-check-ai-image-metadata.md), [`/guides/does-chatgpt-watermark-images`](src/content/guides/does-chatgpt-watermark-images.md)
 
 #### FAQ Questions to Answer:
 - **Q: What does `trainedAlgorithmicMedia` mean in image metadata?**  
@@ -386,8 +386,8 @@ This document defines **12 new guide briefs** designed to capture high-intent se
 5. **How to Verify Your Photo Metadata Before Sharing on X**
 
 #### Internal Links to Include:
-- **Tools:** [`/exif-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L620), [`/ai-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L54)
-- **Guides:** [`/guides/how-to-remove-exif-data`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/how-to-remove-exif-data.md), [`/guides/does-instagram-remove-exif`](file:///Users/pranaymehrotra/agent/nw/.seo/content-gaps.md#brief-1-does-instagram-remove-exif-data-and-location-from-photos)
+- **Tools:** [`/exif-remover`](src/lib/site.ts#L620), [`/ai-watermark-checker`](src/lib/site.ts#L54)
+- **Guides:** [`/guides/how-to-remove-exif-data`](src/content/guides/how-to-remove-exif-data.md), [`/guides/does-instagram-remove-exif`](.seo/content-gaps.md#brief-1-does-instagram-remove-exif-data-and-location-from-photos)
 
 #### FAQ Questions to Answer:
 - **Q: Is my location revealed when I post a photo on X/Twitter?**  

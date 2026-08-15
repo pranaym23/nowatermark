@@ -1,7 +1,7 @@
 # BRIEF 01 — Implement the Tantei redesign
 
 **Agent:** Codex, gpt-5.6-terra, medium effort
-**Repo:** `/Users/pranaymehrotra/agent/nw` (git repo, branch `master`, clean tree)
+**Repo:** the repository root (git repo, branch `master`, clean tree)
 
 ---
 

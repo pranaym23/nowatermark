@@ -1,7 +1,7 @@
 # BRIEF 10 — Statistical text-watermark rewriting, as explicit opt-in
 
 **This brief deliberately reverses two standing rules. Read all of it.**
-**Repo:** `/Users/pranaymehrotra/agent/nw` (branch `main`)
+**Repo:** the repository root (branch `main`)
 **Decision owner:** Pranay, 2026-08-14. Approved with the trade-offs below known.
 
 ---

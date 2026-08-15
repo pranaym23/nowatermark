@@ -1,7 +1,7 @@
 # BRIEF 06 — Generalise the engine beyond raster images
 
 **Prerequisite for briefs 07, 08 and 09. Land this alone, first.**
-**Repo:** `/Users/pranaymehrotra/agent/nw` (branch `main`)
+**Repo:** the repository root (branch `main`)
 
 ---
 

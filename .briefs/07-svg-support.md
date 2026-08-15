@@ -1,7 +1,7 @@
 # BRIEF 07 — SVG scanning and cleaning
 
 **Depends on:** brief 06 (format generalisation) being merged.
-**Repo:** `/Users/pranaymehrotra/agent/nw` (branch `main`)
+**Repo:** the repository root (branch `main`)
 
 ---
 

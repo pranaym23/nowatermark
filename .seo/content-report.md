@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-14  
 **Agent:** agy / gemini-3.6-flash-high  
-**Repo:** `/Users/pranaymehrotra/agent/nw`  
+**Repo:** the repository root  
 **Status:** Complete — 6 new guides created, frontmatter validated, `pnpm build` verified with 0 errors.
 
 ---

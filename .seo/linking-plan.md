@@ -11,19 +11,19 @@
 
 | Tool Page | Linked Related Tools | Linked Related Guides | Link Health & Gaps |
 | :--- | :--- | :--- | :--- |
-| [`/ai-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L54) | `/c2pa-checker`, `/synthid-checker`, `/chatgpt-watermark-checker`, `/exif-remover` | `/guides/what-is-synthid`, `/guides/what-is-c2pa`, `/guides/can-you-remove-ai-watermarks` | **Good.** High authority hub. |
-| [`/ai-watermark-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L104) | `/ai-metadata-remover`, `/exif-remover`, `/c2pa-remover`, `/ai-watermark-checker` | `/guides/can-you-remove-ai-watermarks`, `/guides/what-is-c2pa`, `/guides/how-to-remove-exif-data` | **Good.** |
-| [`/chatgpt-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L157) | `/chatgpt-watermark-remover`, `/c2pa-checker`, `/ai-watermark-checker`, `/content-credentials-checker` | `/guides/does-chatgpt-watermark-images`, `/guides/what-is-c2pa`, `/guides/how-to-check-ai-image-metadata` | **Good.** |
-| [`/chatgpt-watermark-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L204) | `/chatgpt-watermark-checker`, `/ai-watermark-remover`, `/c2pa-remover`, `/ai-metadata-remover` | `/guides/does-chatgpt-watermark-images`, `/guides/can-you-remove-ai-watermarks` | **Good.** |
-| [`/claude-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L245) | `/claude-watermark-remover`, `/ai-watermark-checker` | `/guides/does-claude-watermark-text`, `/guides/can-you-remove-ai-watermarks` | **Missing Link:** Should link to `/guides/hidden-unicode-characters`. |
-| [`/claude-watermark-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L298) | `/claude-watermark-checker`, `/ai-watermark-remover` | `/guides/does-claude-watermark-text` | **Missing Link:** Should link to `/guides/hidden-unicode-characters`. |
-| [`/synthid-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L338) | `/synthid-remover`, `/ai-watermark-checker`, `/c2pa-checker` | `/guides/what-is-synthid`, `/guides/c2pa-vs-synthid`, `/guides/can-you-remove-ai-watermarks` | **Good.** |
-| [`/synthid-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L381) | `/synthid-checker`, `/ai-watermark-remover`, `/ai-metadata-remover` | `/guides/what-is-synthid`, `/guides/can-you-remove-ai-watermarks` | **Missing Link:** Should link to `/guides/c2pa-vs-synthid`. |
-| [`/c2pa-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L438) | `/c2pa-remover`, `/content-credentials-checker`, `/ai-watermark-checker`, `/chatgpt-watermark-checker` | `/guides/what-is-c2pa`, `/guides/c2pa-vs-synthid`, `/guides/what-are-content-credentials` | **Good.** |
-| [`/c2pa-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L493) | `/c2pa-checker`, `/ai-watermark-remover`, `/ai-metadata-remover` | `/guides/what-is-c2pa`, `/guides/what-are-content-credentials` | **Good.** |
-| [`/content-credentials-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L534) | `/c2pa-checker`, `/c2pa-remover`, `/ai-watermark-checker` | `/guides/what-are-content-credentials`, `/guides/what-is-c2pa` | **Good.** |
-| [`/ai-metadata-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L574) | `/exif-remover`, `/ai-watermark-remover`, `/ai-watermark-checker` | `/guides/how-to-check-ai-image-metadata`, `/guides/how-to-remove-exif-data` | **Missing Link:** Should link to proposed Stable Diffusion & ComfyUI guides. |
-| [`/exif-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L620) | `/ai-metadata-remover`, `/ai-watermark-remover`, `/ai-watermark-checker` | `/guides/how-to-remove-exif-data`, `/guides/how-to-check-ai-image-metadata` | **Missing Link:** Should link to proposed iPhone/Mac/Instagram guides. |
+| [`/ai-watermark-checker`](src/lib/site.ts#L54) | `/c2pa-checker`, `/synthid-checker`, `/chatgpt-watermark-checker`, `/exif-remover` | `/guides/what-is-synthid`, `/guides/what-is-c2pa`, `/guides/can-you-remove-ai-watermarks` | **Good.** High authority hub. |
+| [`/ai-watermark-remover`](src/lib/site.ts#L104) | `/ai-metadata-remover`, `/exif-remover`, `/c2pa-remover`, `/ai-watermark-checker` | `/guides/can-you-remove-ai-watermarks`, `/guides/what-is-c2pa`, `/guides/how-to-remove-exif-data` | **Good.** |
+| [`/chatgpt-watermark-checker`](src/lib/site.ts#L157) | `/chatgpt-watermark-remover`, `/c2pa-checker`, `/ai-watermark-checker`, `/content-credentials-checker` | `/guides/does-chatgpt-watermark-images`, `/guides/what-is-c2pa`, `/guides/how-to-check-ai-image-metadata` | **Good.** |
+| [`/chatgpt-watermark-remover`](src/lib/site.ts#L204) | `/chatgpt-watermark-checker`, `/ai-watermark-remover`, `/c2pa-remover`, `/ai-metadata-remover` | `/guides/does-chatgpt-watermark-images`, `/guides/can-you-remove-ai-watermarks` | **Good.** |
+| [`/claude-watermark-checker`](src/lib/site.ts#L245) | `/claude-watermark-remover`, `/ai-watermark-checker` | `/guides/does-claude-watermark-text`, `/guides/can-you-remove-ai-watermarks` | **Missing Link:** Should link to `/guides/hidden-unicode-characters`. |
+| [`/claude-watermark-remover`](src/lib/site.ts#L298) | `/claude-watermark-checker`, `/ai-watermark-remover` | `/guides/does-claude-watermark-text` | **Missing Link:** Should link to `/guides/hidden-unicode-characters`. |
+| [`/synthid-checker`](src/lib/site.ts#L338) | `/synthid-remover`, `/ai-watermark-checker`, `/c2pa-checker` | `/guides/what-is-synthid`, `/guides/c2pa-vs-synthid`, `/guides/can-you-remove-ai-watermarks` | **Good.** |
+| [`/synthid-remover`](src/lib/site.ts#L381) | `/synthid-checker`, `/ai-watermark-remover`, `/ai-metadata-remover` | `/guides/what-is-synthid`, `/guides/can-you-remove-ai-watermarks` | **Missing Link:** Should link to `/guides/c2pa-vs-synthid`. |
+| [`/c2pa-checker`](src/lib/site.ts#L438) | `/c2pa-remover`, `/content-credentials-checker`, `/ai-watermark-checker`, `/chatgpt-watermark-checker` | `/guides/what-is-c2pa`, `/guides/c2pa-vs-synthid`, `/guides/what-are-content-credentials` | **Good.** |
+| [`/c2pa-remover`](src/lib/site.ts#L493) | `/c2pa-checker`, `/ai-watermark-remover`, `/ai-metadata-remover` | `/guides/what-is-c2pa`, `/guides/what-are-content-credentials` | **Good.** |
+| [`/content-credentials-checker`](src/lib/site.ts#L534) | `/c2pa-checker`, `/c2pa-remover`, `/ai-watermark-checker` | `/guides/what-are-content-credentials`, `/guides/what-is-c2pa` | **Good.** |
+| [`/ai-metadata-remover`](src/lib/site.ts#L574) | `/exif-remover`, `/ai-watermark-remover`, `/ai-watermark-checker` | `/guides/how-to-check-ai-image-metadata`, `/guides/how-to-remove-exif-data` | **Missing Link:** Should link to proposed Stable Diffusion & ComfyUI guides. |
+| [`/exif-remover`](src/lib/site.ts#L620) | `/ai-metadata-remover`, `/ai-watermark-remover`, `/ai-watermark-checker` | `/guides/how-to-remove-exif-data`, `/guides/how-to-check-ai-image-metadata` | **Missing Link:** Should link to proposed iPhone/Mac/Instagram guides. |
 
 ---
 
@@ -35,11 +35,11 @@
 - **Incoming Links in Codebase:**
   - **Tool Pages (`src/lib/site.ts`):** **0 tools** list `/guides/hidden-unicode-characters` in `relatedGuides`.
   - **Footer Navigation (`FOOTER_LEARN`):** Not listed in footer.
-  - **Other Guides:** Only linked from [`/guides/does-claude-watermark-text`](file:///Users/pranaymehrotra/agent/nw/src/content/guides/does-claude-watermark-text.md).
+  - **Other Guides:** Only linked from [`/guides/does-claude-watermark-text`](src/content/guides/does-claude-watermark-text.md).
 - **Impact:** Low internal PageRank flow, delayed search engine indexing.
 - **Remediation Plan:**
-  1. Add `/guides/hidden-unicode-characters` to `relatedGuides` on both [`/claude-watermark-checker`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L245) and [`/claude-watermark-remover`](file:///Users/pranaymehrotra/agent/nw/src/lib/site.ts#L298) in `src/lib/site.ts`.
-  2. Cross-link from proposed brief [`/guides/invisible-unicode-character-detector`](file:///Users/pranaymehrotra/agent/nw/.seo/content-gaps.md#brief-9-how-to-detect-and-clean-invisible-unicode-characters-in-text).
+  1. Add `/guides/hidden-unicode-characters` to `relatedGuides` on both [`/claude-watermark-checker`](src/lib/site.ts#L245) and [`/claude-watermark-remover`](src/lib/site.ts#L298) in `src/lib/site.ts`.
+  2. Cross-link from proposed brief [`/guides/invisible-unicode-character-detector`](.seo/content-gaps.md#brief-9-how-to-detect-and-clean-invisible-unicode-characters-in-text).
 
 ---
 

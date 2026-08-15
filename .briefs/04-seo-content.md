@@ -1,7 +1,7 @@
 # BRIEF 04 — Author the new guides
 
 **Agent:** agy, gemini-3.6-flash-high
-**Repo:** `/Users/pranaymehrotra/agent/nw`
+**Repo:** the repository root
 **You own:** new files in `src/content/guides/` only. Do not modify existing
 guides, and do not touch any other directory.
 

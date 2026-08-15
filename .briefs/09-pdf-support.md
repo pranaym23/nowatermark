@@ -2,7 +2,7 @@
 
 **Depends on:** brief 06 (format generalisation) being merged.
 **Size:** This is the large one. Read the staging section before starting.
-**Repo:** `/Users/pranaymehrotra/agent/nw` (branch `main`)
+**Repo:** the repository root (branch `main`)
 
 ---
 

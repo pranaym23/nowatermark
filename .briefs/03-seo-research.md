@@ -1,7 +1,7 @@
 # BRIEF 03 — Keyword research and content strategy
 
 **Agent:** agy, gemini-3.6-flash-high
-**Repo:** `/Users/pranaymehrotra/agent/nw`
+**Repo:** the repository root
 **You own:** `.seo/` only. Do not modify any other directory.
 
 ---
