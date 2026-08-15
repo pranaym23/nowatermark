@@ -10,11 +10,15 @@
 import { formatBytes } from './bytes';
 import { MAX_FILE_BYTES } from './config';
 import { detectType, isSupported, TYPE_LABEL, type DetectedType } from './filetype';
+import type { ScannableFormat } from './formats';
 import { C2PA_ABSENT, inspectC2pa, type C2paInfo } from './metadata/c2pa';
 import { ORIENTATION_LABEL, parseExif, type ExifData } from './metadata/exif';
 import { GENERATOR_PNG_KEYS, matchGenerator } from './metadata/generators';
 import { collectJpegMetadata, walkJpeg } from './metadata/jpeg';
 import { collectPngMetadata, walkPng } from './metadata/png';
+import { collectMarkdownMetadata } from './metadata/frontmatter';
+import { collectPdfMetadata } from './metadata/pdf';
+import { readSvg } from './metadata/svg';
 import { collectWebpMetadata, walkWebp } from './metadata/webp';
 import { parseXmp, type XmpData } from './metadata/xmp';
 import { sanitizeOptional, sanitizeValue } from './sanitize';
@@ -43,7 +47,7 @@ interface TextRecord {
 }
 
 interface Extracted {
-  format: ImageFormat;
+  format: ScannableFormat;
   width?: number;
   height?: number;
   exif?: ExifData;
@@ -57,6 +61,15 @@ interface Extracted {
   unknownBlocks: string[];
   isAnimated: boolean;
   warnings: string[];
+  /**
+   * Document-format concepts. Left undefined for formats where they do not
+   * apply, so a JPEG scan does not sprout a "no scripts found" row it has no
+   * business showing.
+   */
+  activeContent?: number;
+  remoteRefs?: number;
+  /** Extra prose to include in the hidden-character sweep. */
+  extraText?: string;
 }
 
 async function extract(bytes: Uint8Array, format: ImageFormat): Promise<Extracted> {
@@ -263,6 +276,17 @@ function buildPrivacy(x: Extracted): SignalResult[] {
     sanitizeOptional(x.xmp?.rights);
   out.push(make(SIGNALS.author, detectedIf(Boolean(author)), author));
 
+  // Document formats only — a raster image cannot carry either of these, and
+  // showing an always-negative row would be noise rather than information.
+  if (x.activeContent !== undefined) {
+    const value = x.activeContent > 0 ? `${x.activeContent} script or handler` : undefined;
+    out.push(make(SIGNALS.activeContent, detectedIf(x.activeContent > 0), value));
+  }
+  if (x.remoteRefs !== undefined) {
+    const value = x.remoteRefs > 0 ? `${x.remoteRefs} external URL` : undefined;
+    out.push(make(SIGNALS.remoteReference, detectedIf(x.remoteRefs > 0), value));
+  }
+
   return out;
 }
 
@@ -273,6 +297,7 @@ function buildHidden(x: Extracted): SignalResult[] {
     x.xmp?.description ?? '',
     x.xmp?.title ?? '',
     x.exif?.imageDescription ?? '',
+    x.extraText ?? '',
   ].join('\n');
 
   const scan = scanHiddenCharacters(haystack);
@@ -284,6 +309,334 @@ export interface ScanInput {
   name: string;
   type: string;
   size: number;
+}
+
+/**
+ * A scanner turns raw bytes into the normalised ScanResult. One per format
+ * family — the three raster formats share `scanRasterImage` because they share
+ * an extraction model, but a text or document format brings its own.
+ */
+type Scanner = (bytes: Uint8Array, input: ScanInput) => Promise<ScanResult>;
+
+/**
+ * Typed as a total Record over ScannableFormat: opening a format in the
+ * registry without registering a scanner here is a build error.
+ */
+const SCANNERS: Record<ScannableFormat, Scanner> = {
+  jpeg: (bytes, input) => scanRasterImage(bytes, input, 'jpeg'),
+  png: (bytes, input) => scanRasterImage(bytes, input, 'png'),
+  webp: (bytes, input) => scanRasterImage(bytes, input, 'webp'),
+  svg: scanSvg,
+  markdown: scanMarkdown,
+  pdf: scanPdf,
+};
+
+/**
+ * PDF, Phase 1: inspect only.
+ *
+ * There is no PDF cleaner yet and this must not imply there is one. Every
+ * signal is reported with `removable: false` — we can tell you what is in the
+ * file, and saying so while admitting we cannot fix it is the honest position,
+ * not a gap to paper over.
+ */
+async function scanPdf(bytes: Uint8Array, input: ScanInput): Promise<ScanResult> {
+  const meta = await collectPdfMetadata(bytes);
+  const warnings = [...meta.warnings];
+
+  /*
+   * Search every revision, not just the newest. A file whose current /Info has
+   * been emptied by an incremental update still contains the original, and
+   * reporting only the current one would tell the user their name is gone when
+   * it is still sitting in the file.
+   */
+  const anyField = (field: 'author' | 'creator' | 'producer' | 'creationDate' | 'modDate') => {
+    for (const i of meta.infos) {
+      const v = i[field];
+      if (v) return v;
+    }
+    return undefined;
+  };
+
+  const xmp = meta.xmpPackets.length > 0 ? parseXmp(meta.xmpPackets.join('\n')) : undefined;
+
+  const generator =
+    matchGenerator(anyField('creator')) ?? matchGenerator(anyField('producer')) ?? xmp?.generator;
+
+  const author = sanitizeOptional(anyField('author') ?? xmp?.creator);
+  const timestamp = sanitizeOptional(
+    anyField('creationDate') ?? anyField('modDate') ?? xmp?.createDate,
+  );
+  const software = sanitizeOptional(anyField('creator') ?? anyField('producer'));
+
+  const textBits = meta.infos
+    .flatMap((i) => [i.title, i.subject, i.keywords, ...i.customKeys])
+    .filter(Boolean) as string[];
+
+  if (meta.staleMetadata) {
+    warnings.push(
+      'Metadata from an earlier version of this document is still present. Software that removes PDF metadata by saving an update leaves the original readable — check the revision count above.',
+    );
+  }
+  if (meta.degraded) {
+    warnings.push('Parts of this PDF could not be read, so this report may be incomplete.');
+  }
+
+  // Phase 1: nothing here is removable, so say so on every row.
+  const ro = false as const;
+
+  return {
+    file: { name: input.name, type: input.type, size: input.size, format: 'pdf' },
+    provenance: [
+      make(SIGNALS.c2pa, detectedIf(meta.hasC2pa), undefined, ro),
+      make(SIGNALS.aiGenerator, detectedIf(Boolean(generator)), generator, ro),
+      make(SIGNALS.synthid, 'unable_to_verify', undefined, 'unknown'),
+    ],
+    metadata: [
+      make(
+        SIGNALS.xmp,
+        detectedIf(meta.xmpPackets.length > 0),
+        meta.xmpPackets.length > 0 ? `${meta.xmpPackets.length} packet(s)` : undefined,
+        ro,
+      ),
+      make(
+        SIGNALS.embeddedText,
+        detectedIf(textBits.length > 0),
+        textBits.length > 0 ? textBits.slice(0, 3).join(', ') : undefined,
+        ro,
+      ),
+    ],
+    privacy: [
+      make(SIGNALS.author, detectedIf(Boolean(author)), author, ro),
+      make(SIGNALS.timestamp, detectedIf(Boolean(timestamp)), timestamp, ro),
+      make(SIGNALS.software, detectedIf(Boolean(software)), software, ro),
+      make(
+        SIGNALS.activeContent,
+        detectedIf(meta.hasJavaScript),
+        meta.hasJavaScript ? 'JavaScript in the document' : undefined,
+        ro,
+      ),
+      make(
+        SIGNALS.priorRevisions,
+        detectedIf(meta.revisionCount > 1),
+        meta.revisionCount > 1 ? `${meta.revisionCount - 1} earlier revision(s)` : undefined,
+        ro,
+      ),
+    ],
+    hiddenSignals: [],
+    warnings,
+  };
+}
+
+/**
+ * Markdown gets its own result builders rather than reusing the raster ones.
+ * A text file has no EXIF, no ICC profile and no colour data, and rendering
+ * "EXIF: Not detected" against a blog post is noise dressed up as information.
+ * The signal specs still come from `signals.ts`, so no claim drifts.
+ */
+async function scanMarkdown(bytes: Uint8Array, input: ScanInput): Promise<ScanResult> {
+  let text: string;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    throw new ScanError('corrupt', 'This file is not valid UTF-8 text.');
+  }
+
+  const meta = collectMarkdownMetadata(text);
+  const warnings: string[] = [];
+  const keys = meta.frontmatter?.keys ?? [];
+
+  const byRole = (role: string) => keys.filter((k) => k.role === role);
+  const valuesOf = (role: string) =>
+    byRole(role)
+      .map((k) => k.value)
+      .filter((v) => v.length > 0);
+
+  const aiKeys = byRole('ai');
+  const toolKeys = byRole('tool');
+
+  const generator =
+    matchGenerator(valuesOf('tool')[0]) ??
+    matchGenerator(valuesOf('ai')[0]) ??
+    meta.metaTags.map((t) => matchGenerator(t.content)).find(Boolean) ??
+    meta.commentText.map((c) => matchGenerator(c)).find(Boolean) ??
+    meta.jsonLdText.map((c) => matchGenerator(c)).find(Boolean);
+
+  const aiDetected = aiKeys.length > 0 || Boolean(generator);
+  const aiValue = aiDetected
+    ? [generator, aiKeys.length > 0 ? `${aiKeys.length} frontmatter key${aiKeys.length === 1 ? '' : 's'}` : null]
+        .filter(Boolean)
+        .join(' · ')
+    : undefined;
+
+  if (meta.frontmatter?.unsafe) {
+    warnings.push(
+      'This file uses YAML anchors or merge keys. We can report what is in the frontmatter but cannot rewrite it safely.',
+    );
+  }
+
+  const textRecordCount = meta.comments.length + meta.jsonLd.length + meta.metaTags.length;
+  const recordLabels = [
+    meta.comments.length > 0 ? `${meta.comments.length} comment` : null,
+    meta.jsonLd.length > 0 ? `${meta.jsonLd.length} structured-data block` : null,
+    meta.metaTags.length > 0 ? `${meta.metaTags.length} meta tag` : null,
+  ].filter(Boolean) as string[];
+
+  const author = sanitizeOptional(valuesOf('author')[0]);
+  const timestamp = sanitizeOptional(valuesOf('timestamp')[0]);
+  const software = sanitizeOptional(valuesOf('tool')[0]);
+
+  const unsafe = meta.frontmatter?.unsafe === true;
+  const removable = (role: string): SignalResult['removable'] =>
+    unsafe && byRole(role).length > 0 ? false : true;
+
+  const hidden = scanHiddenCharacters(text);
+
+  return {
+    file: { name: input.name, type: input.type, size: input.size, format: 'markdown' },
+    provenance: [
+      make(SIGNALS.aiGenerator, detectedIf(aiDetected), aiValue),
+      // Non-negotiable #4: this is the signal that actually matters for a text
+      // file, and it is permanently unverifiable.
+      make(SIGNALS.claudeWatermark, 'unable_to_verify', undefined, 'unknown'),
+    ],
+    metadata: [
+      make(
+        SIGNALS.embeddedText,
+        detectedIf(textRecordCount > 0),
+        recordLabels.length > 0 ? recordLabels.join(', ') : undefined,
+      ),
+    ],
+    privacy: [
+      make(SIGNALS.author, detectedIf(Boolean(author)), author, removable('author')),
+      make(SIGNALS.timestamp, detectedIf(Boolean(timestamp)), timestamp, removable('timestamp')),
+      make(SIGNALS.software, detectedIf(Boolean(software)), software, removable('tool')),
+    ],
+    hiddenSignals: [
+      make(
+        SIGNALS.hiddenUnicode,
+        detectedIf(hidden.removable > 0),
+        hidden.removable > 0 ? `${hidden.removable} in the text` : undefined,
+      ),
+    ],
+    warnings,
+  };
+}
+
+/**
+ * Metadata carried by a raster image embedded in another file as a data URI.
+ *
+ * An SVG can wrap a full JPEG, and that JPEG keeps its own EXIF and GPS. If we
+ * only stripped the XML we would report a clean file while the author's
+ * coordinates sat one base64 decode away — so nested payloads are extracted and
+ * reported as first-class findings.
+ */
+async function extractEmbedded(bytes: Uint8Array): Promise<Extracted | null> {
+  const type = detectType(bytes);
+  if (type !== 'jpeg' && type !== 'png' && type !== 'webp') return null;
+  try {
+    return await extract(bytes, type);
+  } catch {
+    return null;
+  }
+}
+
+async function scanSvg(bytes: Uint8Array, input: ScanInput): Promise<ScanResult> {
+  const read = readSvg(bytes);
+  if ('error' in read) throw new ScanError('corrupt', read.error);
+
+  const { text, structure, meta } = read;
+
+  const x: Extracted = {
+    format: 'svg',
+    hasIptc: false,
+    c2pa: C2PA_ABSENT,
+    hasIcc: false,
+    hasExtendedXmp: false,
+    textRecords: [],
+    unknownBlocks: [],
+    isAnimated: false,
+    warnings: [...meta.warnings],
+    activeContent: meta.scriptElements.length + meta.eventAttrs.length,
+    remoteRefs: meta.remoteRefs.length,
+    extraText: meta.textContent,
+  };
+
+  if (meta.xmpText) x.xmp = parseXmp(meta.xmpText);
+
+  for (const region of meta.titleElements) {
+    x.textRecords.push({
+      keyword: 'Title',
+      text: stripTags(text.slice(region.start, region.end)),
+      source: 'SVG <title>',
+    });
+  }
+  for (const region of meta.descElements) {
+    x.textRecords.push({
+      keyword: 'Description',
+      text: stripTags(text.slice(region.start, region.end)),
+      source: 'SVG <desc>',
+    });
+  }
+  for (const comment of meta.generatorComments) {
+    x.textRecords.push({ keyword: 'Comment', text: comment.text.trim(), source: 'XML comment' });
+  }
+  for (const attr of meta.editorAttrs) {
+    x.textRecords.push({ keyword: attr.name, text: attr.value, source: 'Editor attribute' });
+  }
+
+  // Fold in anything hiding inside embedded rasters.
+  let embeddedWithMetadata = 0;
+  for (const image of meta.embeddedImages) {
+    const nested = await extractEmbedded(image.bytes);
+    if (!nested) continue;
+    if (!x.exif && nested.exif) x.exif = nested.exif;
+    if (!x.xmp && nested.xmp) x.xmp = nested.xmp;
+    if (nested.hasIptc) x.hasIptc = true;
+    if (nested.hasIcc) x.hasIcc = true;
+    if (nested.c2pa.present && !x.c2pa.present) x.c2pa = nested.c2pa;
+    for (const record of nested.textRecords) {
+      x.textRecords.push({ ...record, source: `Embedded image · ${record.source}` });
+    }
+    if (nested.exif || nested.xmp || nested.c2pa.present || nested.hasIptc) {
+      embeddedWithMetadata++;
+    }
+  }
+  if (embeddedWithMetadata > 0) {
+    x.warnings.push(
+      `${embeddedWithMetadata} image${embeddedWithMetadata === 1 ? '' : 's'} embedded inside this SVG carr${embeddedWithMetadata === 1 ? 'ies' : 'y'} their own metadata.`,
+    );
+  }
+
+  const root = structure.tags.find((t) => t.lower === 'svg' && !t.closing);
+  x.width = numericAttr(root, 'width');
+  x.height = numericAttr(root, 'height');
+
+  return {
+    file: {
+      name: input.name,
+      type: input.type,
+      size: input.size,
+      width: x.width,
+      height: x.height,
+      format: 'svg',
+    },
+    provenance: buildProvenance(x),
+    metadata: buildMetadata(x),
+    privacy: buildPrivacy(x),
+    hiddenSignals: buildHidden(x),
+    warnings: x.warnings,
+  };
+}
+
+function stripTags(s: string): string {
+  return s.replace(/<[^>]*>/g, ' ').trim();
+}
+
+function numericAttr(tag: { attrs: { lower: string; value: string }[] } | undefined, name: string) {
+  const raw = tag?.attrs.find((a) => a.lower === name)?.value;
+  if (!raw) return undefined;
+  const n = Number.parseFloat(raw);
+  return Number.isFinite(n) && /^[\d.]+(px)?$/.test(raw.trim()) ? Math.round(n) : undefined;
 }
 
 export async function scanImage(bytes: Uint8Array, input: ScanInput): Promise<ScanResult> {
@@ -303,7 +656,18 @@ export async function scanImage(bytes: Uint8Array, input: ScanInput): Promise<Sc
     );
   }
 
-  const x = await extract(bytes, detected);
+  return SCANNERS[detected](bytes, input);
+}
+
+/** Canonical name — `scanImage` is kept as an alias for existing callers. */
+export const scanFile = scanImage;
+
+async function scanRasterImage(
+  bytes: Uint8Array,
+  input: ScanInput,
+  format: ImageFormat,
+): Promise<ScanResult> {
+  const x = await extract(bytes, format);
 
   const orientationNote =
     x.exif?.orientation && x.exif.orientation !== 1
@@ -334,7 +698,8 @@ export async function scanImage(bytes: Uint8Array, input: ScanInput): Promise<Sc
 /** Orientation of the scanned file, used by the cleaner UI messaging. */
 export async function readOrientation(bytes: Uint8Array): Promise<number | undefined> {
   const detected = detectType(bytes);
-  if (!isSupported(detected)) return undefined;
+  // Orientation is an EXIF concept, so this is raster-only by definition.
+  if (detected !== 'jpeg' && detected !== 'png' && detected !== 'webp') return undefined;
   try {
     const x = await extract(bytes, detected);
     return x.exif?.orientation;

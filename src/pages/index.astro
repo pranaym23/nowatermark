@@ -10,12 +10,12 @@ const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.d
 
 const title = 'AI Watermark Checker & Metadata Remover | NoWatermark';
 const description =
-  'Check images for AI provenance, C2PA and hidden metadata, or scan text for invisible Unicode characters. Everything runs privately in your browser - nothing is uploaded.';
+  'Check images for AI provenance, C2PA and hidden metadata, or scan text for invisible Unicode characters. File processing runs privately in your browser - nothing is uploaded.';
 
 const faq = [
   {
     q: 'Are my files uploaded?',
-    a: 'No. Every scan and clean runs inside your browser. There is no upload endpoint and no storage. You can disconnect from the internet after the page loads and the tools keep working.',
+    a: 'No. Every file scan and clean runs inside your browser. There is no upload endpoint and no storage. You can disconnect from the internet after the page loads and the file tools keep working. The one feature that sends anything is the optional text rewrite, which asks first and shows you exactly what it will send.',
   },
   {
     q: 'Can you remove SynthID?',
@@ -31,7 +31,7 @@ const faq = [
   },
   {
     q: 'Which formats are supported?',
-    a: 'JPG, PNG and WebP for images, and any pasted text for the hidden-character tools. More formats may follow.',
+    a: 'We scan JPG, PNG, WebP, SVG, Markdown and PDF, and clean all of them except PDF — PDF inspection is available now, with removal still to come. Pasted text is also supported for the hidden-character tools. In an SVG, images embedded inside the file are cleaned too.',
   },
   {
     q: 'Do I need an account?',
@@ -134,7 +134,9 @@ const schema = [
       <p class="mt-3 max-w-2xl text-sm nw-muted">
         NoWatermark has no upload endpoint, no database and no file storage. Your image is read
         from disk into your browser's memory, inspected there, cleaned there, and offered back to
-        you as a local download. Nothing is transmitted at any point.
+        you as a local download. No file is transmitted at any point. The one thing this site can
+        send is text you paste, and only if you press the rewrite button and confirm what is sent —
+        see our <a href="/privacy" class="underline">privacy page</a>.
       </p>
       <p class="mt-3 max-w-2xl text-sm nw-muted">
         You do not have to take our word for it. Load this page, disconnect from the internet, then

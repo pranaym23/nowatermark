@@ -69,7 +69,17 @@ function ensureWorker(): Worker | null {
   }
 }
 
-function send<T>(request: Omit<WorkerRequest, 'id'>): Promise<T> | null {
+/**
+ * `Omit` over a union collapses it to the shared keys, which silently drops
+ * `options` from the clean variant. Distribute over the union instead.
+ */
+type UnsentRequest = WorkerRequest extends infer T
+  ? T extends WorkerRequest
+    ? Omit<T, 'id'>
+    : never
+  : never;
+
+function send<T>(request: UnsentRequest): Promise<T> | null {
   const active = ensureWorker();
   if (!active) return null;
   const id = nextId++;

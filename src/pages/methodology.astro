@@ -128,8 +128,38 @@ const mark = (value: boolean | 'target') =>
           manifest cleans your copy of the file, not anyone else's records.
         </li>
         <li>Pixel-embedded watermarks such as SynthID are neither detectable nor removable here.</li>
-        <li>Statistical text watermarks are not detectable client-side by anyone, including us.</li>
-        <li>Supported formats are JPG, PNG and WebP. AVIF, HEIC, PDF, SVG, audio and video are not supported.</li>
+        <li>
+          Statistical text watermarks are not detectable client-side by anyone, including us. We
+          offer an optional <em>rewrite</em> for pasted text, which rewords it in an attempt to
+          disturb one. It is the only feature on this site that sends anything anywhere: it asks
+          every time, shows you the exact payload first, and sends only the text you pasted — never
+          a file. Because we have no detector, its result is reported as
+          <strong>"Rewritten — unverified"</strong> and never counted as a removal.
+        </li>
+        <li>
+          We can scan JPG, PNG, WebP, SVG, Markdown and PDF. We can <em>clean</em> all of those
+          except PDF. AVIF, HEIC, GIF, TIFF, audio and video are not supported at all.
+        </li>
+        <li>
+          In a Markdown file we remove the frontmatter keys that describe how the document was made
+          — generator, model, prompt, author, dates — and leave the keys that drive your site build,
+          such as title, tags and layout. Where the frontmatter uses YAML anchors, one key can
+          depend on another, so we report what is there and change nothing.
+        </li>
+        <li>
+          <strong>PDF is inspect-only.</strong> A PDF is append-only: saving it again writes a new
+          version on top of the old one rather than replacing it, so every earlier revision stays in
+          the file and stays readable. Tools that "remove" PDF metadata by appending an update leave
+          the original recoverable. We report what is in the file, including how many earlier
+          revisions it carries, and we do not offer a removal we cannot yet do correctly. Encrypted
+          PDFs are reported and left alone.
+        </li>
+        <li>
+          In an SVG, images embedded as data URIs are unpacked and cleaned in place, so metadata
+          inside a nested JPEG is removed rather than overlooked. An SVG that references an image on
+          another server has that reference removed — the content was never in your file, and
+          fetching it would reveal your IP address to that server.
+        </li>
         <li>
           Very large files are limited by browser memory rather than by any server constraint, since
           there is no server.

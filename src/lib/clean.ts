@@ -11,8 +11,12 @@
 
 import { cleanJpegBytes } from './cleaners/jpeg';
 import { cleanPngBytes } from './cleaners/png';
+import { cleanMarkdownBytes } from './cleaners/markdown';
+import { cleanSvgBytes } from './cleaners/svg';
 import { cleanWebpBytes } from './cleaners/webp';
+import type { Cleaner, RawCleanOutcome } from './cleaners/types';
 import { extensionFor, mimeFor } from './filetype';
+import { isCleanable, type CleanableNowFormat } from './formats';
 import { splitExtension } from './sanitize';
 import { signalById } from './signals';
 import { scanImage, type ScanInput } from './scan';
@@ -21,12 +25,26 @@ import {
   allSignals,
   type CleanOptions,
   type CleanResult,
-  type ImageFormat,
+  type CleanableFormat,
   type ScanResult,
   type SignalStatus,
 } from './types';
 
-export type SignalOutcome = 'removed' | 'kept' | 'remaining' | 'unverifiable' | 'absent';
+/**
+ * `rewritten_unverified` is deliberately not a form of `removed`.
+ *
+ * Rewriting text to disrupt a statistical watermark cannot be verified — we
+ * have no detector, so we cannot confirm any detector now fails. The result is
+ * a changed document, not a confirmed removal, and the UI must say so. It never
+ * appears in `removedSignals`. See CLAUDE.md non-negotiable #4.
+ */
+export type SignalOutcome =
+  | 'removed'
+  | 'kept'
+  | 'remaining'
+  | 'unverifiable'
+  | 'rewritten_unverified'
+  | 'absent';
 
 export interface SignalComparison {
   id: string;
@@ -51,18 +69,36 @@ export interface CleanOutcome {
   sizeAfter?: number;
 }
 
-function runCleaner(bytes: Uint8Array, format: ImageFormat, preserveOrientation: boolean) {
-  switch (format) {
-    case 'jpeg':
-      return cleanJpegBytes(bytes, preserveOrientation);
-    case 'png':
-      return cleanPngBytes(bytes, preserveOrientation);
-    case 'webp':
-      return cleanWebpBytes(bytes, preserveOrientation);
+/**
+ * The cleaner registry.
+ *
+ * Typed as a total Record over CleanableNowFormat, so marking a format
+ * `support: 'clean'` in the registry without adding a cleaner here is a build
+ * error rather than a runtime surprise. The raster cleaners keep their own
+ * positional signature; the adapters below are the only thing that knows it.
+ */
+const CLEANERS: Record<CleanableNowFormat, Cleaner> = {
+  jpeg: (bytes, ctx) => cleanJpegBytes(bytes, ctx.preserveOrientation),
+  png: (bytes, ctx) => cleanPngBytes(bytes, ctx.preserveOrientation),
+  webp: (bytes, ctx) => cleanWebpBytes(bytes, ctx.preserveOrientation),
+  svg: cleanSvgBytes,
+  markdown: cleanMarkdownBytes,
+};
+
+function runCleaner(
+  bytes: Uint8Array,
+  format: CleanableFormat,
+  preserveOrientation: boolean,
+): RawCleanOutcome {
+  if (!isCleanable(format)) {
+    // Scannable but not cleanable — we can say what is in the file but not
+    // change it. The caller reports this as a failed clean, original intact.
+    return { ok: false, warnings: [] };
   }
+  return CLEANERS[format](bytes, { preserveOrientation });
 }
 
-export function cleanedFilename(original: string, format: ImageFormat): string {
+export function cleanedFilename(original: string, format: CleanableFormat): string {
   const { base } = splitExtension(original);
   return `${base}-clean.${extensionFor(format)}`;
 }

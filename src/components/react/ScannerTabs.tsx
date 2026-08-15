@@ -18,7 +18,7 @@ import TextScanner from './TextScanner';
 type TabId = 'image' | 'text';
 
 const TABS: Array<{ id: TabId; label: string; hint: string }> = [
-  { id: 'image', label: 'Image', hint: 'JPG, PNG or WebP' },
+  { id: 'image', label: 'File', hint: 'Images, SVG, Markdown, PDF' },
   { id: 'text', label: 'Text', hint: 'Paste anything' },
 ];
 

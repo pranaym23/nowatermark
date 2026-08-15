@@ -23,9 +23,9 @@ const description =
     <div class="nw-content mt-10">
       <h2>Files you scan or clean</h2>
       <p>
-        Images and text you put into our tools are processed entirely on your own device. There is
-        no upload endpoint on this site. There is no server that receives files, no database, and no
-        object storage. We do not have a copy of your file, and we never did.
+        Files you put into our tools are processed entirely on your own device. There is no upload
+        endpoint on this site. There is no server that receives files, no database, and no object
+        storage. We do not have a copy of your file, and we never did.
       </p>
       <p>Specifically, we never transmit or store:</p>
       <ul>
@@ -33,12 +33,42 @@ const description =
         <li>hashes or fingerprints derived from your file</li>
         <li>your filenames</li>
         <li>metadata values extracted from your file, including GPS, timestamps and author fields</li>
-        <li>text you paste into the text tools</li>
       </ul>
       <p>
-        You can confirm this yourself: load a tool page, disconnect from the internet, and use it.
-        Everything works. Or watch your browser's network panel while you scan — nothing carrying
-        your file appears.
+        You can confirm this yourself: load a tool page, disconnect from the internet, and scan or
+        clean a file. Everything works. Or watch your browser's network panel while you scan —
+        nothing carrying your file appears.
+      </p>
+
+      <h2>Text you paste — and the one thing that is sent</h2>
+      <p>
+        Checking pasted text for hidden characters, and cleaning them out, happens entirely on your
+        device like everything else. Nothing is sent.
+      </p>
+      <p>
+        <strong>There is one exception, and it is the only one on this site.</strong> The text
+        scanner offers a <em>rewrite</em> option, which rewords your text in an attempt to disturb a
+        statistical AI text watermark. A statistical watermark is encoded in word choice, so the
+        only way to disturb it is to change the words — and that needs a language model, which we
+        cannot run inside your browser.
+      </p>
+      <p>
+        If, and only if, you use that option, the text in the box is sent to
+        <strong>Google's Gemini API</strong> through a proxy on this site, and the rewritten text is
+        sent back. This happens per use: you press the button, you are shown the exact request body
+        first, and nothing is remembered between uses. There is no setting that turns it on
+        permanently, by design.
+      </p>
+      <p>What is sent is only the text you typed or pasted. Never a file, a filename or a hash.</p>
+      <p>
+        We do not log the request body and we store nothing. Once the text reaches Google it is
+        governed by Google's terms for the Gemini API, not by this page — if that matters for your
+        text, do not use the rewrite option.
+      </p>
+      <p>
+        We cannot tell you whether a rewrite worked. There is no watermark detector we can run, so
+        the result is labelled <strong>"Rewritten — unverified"</strong> and is never counted as a
+        removal anywhere in the interface.
       </p>
 
       <h2>Accounts</h2>
@@ -64,7 +94,8 @@ const description =
         Neither tool ever receives anything derived from your file or your pasted text. That is a
         hard architectural boundary, not a setting: files are read and cleaned entirely on your
         device and are never transmitted, so there is nothing about their contents for an analytics
-        tool to collect.
+        tool to collect. The rewrite option described above sends text to Google's Gemini API only,
+        never to an analytics tool, and it sends no event recording that you used it.
       </p>
       <p>
         Analytics is optional to the product. If you block it — with an extension, a tracker

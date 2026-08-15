@@ -40,7 +40,9 @@ const description =
       </p>
       <p>
         <strong>Your file never leaves your device.</strong> There is no upload endpoint, no
-        database, no storage. Load a page, disconnect from the internet, and the tools still work.
+        database, no storage. Load a page, disconnect from the internet, and the file tools still
+        work. One optional feature — rewriting pasted text — does send that text to Google, and it
+        asks every time.
       </p>
 
       <h2>Provider-neutral</h2>
@@ -53,7 +55,7 @@ const description =
       <h2>How it is built</h2>
       <p>
         A static site with no backend. The scanners and cleaners are hand-written container parsers
-        for JPEG, PNG and WebP, running in a Web Worker on your device. Cleaning is lossless by
+        for JPEG, PNG, WebP, SVG and Markdown, running in a Web Worker on your device. Cleaning is lossless by
         construction: compressed image data is copied byte-for-byte and never re-encoded.
       </p>
       <p>
