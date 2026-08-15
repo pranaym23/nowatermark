@@ -669,7 +669,7 @@ export const TOOLS: ToolDef[] = [
       },
       {
         q: 'Is the photo uploaded to a server?',
-        a: 'No. It is read and rewritten in your browser. Nothing is transmitted, which you can confirm in your browser\'s network panel.',
+        a: 'No. It is read and rewritten in your browser. No file is transmitted, which you can confirm in your browser\'s network panel.',
       },
     ],
     relatedTools: ['/ai-metadata-remover', '/ai-watermark-remover', '/ai-watermark-checker'],

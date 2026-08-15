@@ -33,7 +33,24 @@ export interface SignalResult {
   detail?: string;
 }
 
+/**
+ * Raster image formats. These share the container-walking cleaners and the
+ * EXIF/XMP/C2PA extraction path, and they are the only formats for which
+ * "preserve orientation" means anything.
+ */
 export type ImageFormat = 'jpeg' | 'png' | 'webp';
+
+/** Text-based formats — cleaned by editing bytes in place, not by rebuilding. */
+export type TextFormat = 'svg' | 'markdown';
+
+/** Structured document formats with their own object model. */
+export type DocFormat = 'pdf';
+
+/**
+ * Every format the registry knows about. Membership here does not imply we
+ * process it — `src/lib/formats.ts` gates that with `support`.
+ */
+export type CleanableFormat = ImageFormat | TextFormat | DocFormat;
 
 export interface ScannedFile {
   name: string;
@@ -42,7 +59,7 @@ export interface ScannedFile {
   width?: number;
   height?: number;
   /** Format as determined by magic bytes, not by extension or MIME. */
-  format?: ImageFormat;
+  format?: CleanableFormat;
 }
 
 export interface ScanResult {

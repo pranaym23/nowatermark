@@ -1,11 +1,17 @@
 /**
  * Hidden-character scanner and cleaner for pasted text.
  *
- * Pasted text never leaves the browser: no API call, no analytics event, no
- * storage (PRD §23). Everything below is synchronous local string work.
+ * Scanning and hidden-character cleaning are local: no API call, no analytics
+ * event, no storage (PRD §23). Pure synchronous string work.
+ *
+ * The one exception is the rewrite panel at the bottom, which sends the pasted
+ * text to Google's Gemini API through our own proxy. It is opt-in per use, it
+ * shows the exact payload first, and its result is labelled as unverified —
+ * there is no client-side detector for a statistical watermark, so we cannot
+ * claim the rewrite worked. See functions/api/rewrite.ts.
  */
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { MAX_TEXT_LENGTH } from '../../lib/config';
 import {
@@ -15,6 +21,12 @@ import {
   segmentText,
   type HiddenCategory,
 } from '../../lib/unicode/hidden';
+import {
+  requestRewrite,
+  rewritePayloadPreview,
+  type RewriteMode,
+} from '../../lib/rewrite';
+import { REWRITE_ENABLED, TURNSTILE_SITE_KEY, loadTurnstile } from '../../lib/turnstile';
 import { Button, Notice } from './ui';
 
 const CATEGORY_LABEL: Record<HiddenCategory, string> = {
@@ -32,6 +44,21 @@ export default function TextScanner() {
   const [cleaned, setCleaned] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  /*
+   * Rewriting state. `showPayload` gates the send behind seeing the actual
+   * request body — the consent is per use and is never remembered, so there is
+   * deliberately no "don't ask again".
+   */
+  const [showPayload, setShowPayload] = useState(false);
+  const [mode, setMode] = useState<RewriteMode>('paraphrase');
+  const [rewriting, setRewriting] = useState(false);
+  const [rewritten, setRewritten] = useState<string | null>(null);
+  const [rewriteError, setRewriteError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileFailed, setTurnstileFailed] = useState(false);
+  const turnstileRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
   const scan = useMemo(() => scanHiddenCharacters(text), [text]);
   const segments = useMemo(
     () => (text.length > 0 && text.length <= MAX_TEXT_LENGTH ? segmentText(text, scan) : []),
@@ -45,6 +72,54 @@ export default function TextScanner() {
     setCleaned(result.text);
     setCopied(false);
   };
+
+  /*
+   * The widget is rendered only once the user has opened the confirmation step,
+   * so a visitor who never touches the rewrite feature never loads a
+   * third-party script.
+   */
+  useEffect(() => {
+    if (!showPayload || !REWRITE_ENABLED) return;
+    let cancelled = false;
+
+    void loadTurnstile().then((api) => {
+      if (cancelled || !api || !turnstileRef.current || widgetIdRef.current) {
+        if (!cancelled && !api) setTurnstileFailed(true);
+        return;
+      }
+      widgetIdRef.current = api.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token) => setTurnstileToken(token),
+        'error-callback': () => setTurnstileFailed(true),
+        'expired-callback': () => setTurnstileToken(null),
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      const id = widgetIdRef.current;
+      if (id && window.turnstile) window.turnstile.remove(id);
+      widgetIdRef.current = null;
+      setTurnstileToken(null);
+    };
+  }, [showPayload]);
+
+  const runRewrite = useCallback(async () => {
+    if (!turnstileToken) return;
+    setRewriting(true);
+    setRewriteError(null);
+    const result = await requestRewrite({ text, mode, turnstileToken });
+    setRewriting(false);
+    if (result.ok) {
+      setRewritten(result.text);
+      setShowPayload(false);
+    } else {
+      setRewriteError(result.error);
+      // A token is single-use; a retry needs a fresh one.
+      if (widgetIdRef.current && window.turnstile) window.turnstile.reset(widgetIdRef.current);
+      setTurnstileToken(null);
+    }
+  }, [text, mode, turnstileToken]);
 
   const copy = async () => {
     if (cleaned == null) return;
@@ -68,6 +143,9 @@ export default function TextScanner() {
           onChange={(e) => {
             setText(e.target.value.slice(0, MAX_TEXT_LENGTH));
             setCleaned(null);
+            setRewritten(null);
+            setRewriteError(null);
+            setShowPayload(false);
           }}
           rows={8}
           placeholder="Paste text here to check it for invisible characters…"
@@ -79,7 +157,8 @@ export default function TextScanner() {
           }}
         />
         <p className="mt-1.5 text-xs" style={{ color: 'var(--nw-text-muted)' }}>
-          🔒 Processed locally in your browser. Your text is never sent anywhere.
+          🔒 Scanning and cleaning happen locally in your browser. Nothing is sent unless you
+          explicitly use the rewrite option below.
         </p>
       </div>
 
@@ -196,14 +275,142 @@ export default function TextScanner() {
       ) : null}
 
       <Notice>
-        <p className="text-sm font-medium">This does not remove statistical text watermarks.</p>
+        <p className="text-sm font-medium">Cleaning above does not touch statistical text watermarks.</p>
         <p className="mt-1 text-sm">
           A statistical watermark is encoded in a model’s word choices, not in invisible characters.
           Removing hidden Unicode has no effect on it, and no browser-side tool can confirm whether
-          one is present. NoWatermark does not claim to detect or remove Anthropic’s statistical
-          watermark.
+          one is present — so we cannot tell you whether your text carries one.
         </p>
       </Notice>
+
+      {REWRITE_ENABLED && text.trim().length > 0 ? (
+        <section
+          className="nw-evidence-panel p-4"
+          style={{ borderColor: 'var(--nw-border-strong)' }}
+        >
+          <h3 className="text-sm font-semibold">Rewrite this text (sends it to Google)</h3>
+          <p className="mt-1.5 text-sm">
+            The only known way to disturb a statistical watermark is to reword the text. That needs
+            a language model, which we cannot run on your device — so this one feature, and nothing
+            else on this site, sends your text to Google’s Gemini API.
+          </p>
+
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
+            <li>Only the text in the box above is sent. No file, no filename, nothing else.</li>
+            <li>It happens only when you press the button below, every time. Nothing is remembered.</li>
+            <li>
+              <strong>We cannot verify it worked.</strong> There is no detector we can run, so a
+              rewritten text is changed, not confirmed clean.
+            </li>
+            <li>
+              <strong>Google uses this text to improve their products, and human reviewers may
+              read it.</strong>{' '}
+              That is their stated policy for the tier this uses. Do not send anything
+              confidential, personal or sensitive —{' '}
+              <a href="/privacy" className="underline">
+                the details are on our privacy page
+              </a>
+              .
+            </li>
+          </ul>
+
+          {rewriteError ? (
+            <p className="mt-3 text-sm" style={{ color: 'var(--nw-detected)' }}>
+              {rewriteError}
+            </p>
+          ) : null}
+
+          {!showPayload ? (
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Button variant="secondary" onClick={() => setShowPayload(true)} disabled={rewriting}>
+                Rewrite with Gemini…
+              </Button>
+              <span className="text-xs" style={{ color: 'var(--nw-text-muted)' }}>
+                You will see exactly what is sent before anything leaves your device.
+              </span>
+            </div>
+          ) : (
+            <div className="mt-4">
+              <p className="text-sm font-medium">This is exactly what will be sent:</p>
+              <textarea
+                readOnly
+                rows={6}
+                value={rewritePayloadPreview({ text, mode })}
+                className="nw-evidence-panel mt-2 w-full resize-y p-3 font-mono text-xs"
+                style={{
+                  backgroundColor: 'var(--nw-surface-muted)',
+                  border: '1px solid var(--nw-border)',
+                  color: 'var(--nw-text)',
+                }}
+              />
+              <div ref={turnstileRef} className="mt-3" />
+              {turnstileFailed ? (
+                <p className="mt-2 text-sm" style={{ color: 'var(--nw-detected)' }}>
+                  The bot check could not load, so we cannot send this. If you block third-party
+                  scripts, that is why — everything else on this page still works.
+                </p>
+              ) : null}
+
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <label className="text-sm">
+                  Style{' '}
+                  <select
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value as RewriteMode)}
+                    className="ml-1 p-1 text-sm"
+                    style={{
+                      backgroundColor: 'var(--nw-surface)',
+                      border: '1px solid var(--nw-border-strong)',
+                      color: 'var(--nw-text)',
+                    }}
+                  >
+                    <option value="paraphrase">Paraphrase</option>
+                    <option value="humanize">More natural</option>
+                  </select>
+                </label>
+                <Button onClick={() => void runRewrite()} disabled={rewriting || !turnstileToken}>
+                  {rewriting ? 'Sending…' : 'Send and rewrite'}
+                </Button>
+                {!turnstileToken && !turnstileFailed ? (
+                  <span className="text-xs" style={{ color: 'var(--nw-text-muted)' }}>
+                    Waiting for the bot check…
+                  </span>
+                ) : null}
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowPayload(false)}
+                  disabled={rewriting}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {rewritten !== null ? (
+            <div className="mt-4">
+              <h4 className="text-sm font-semibold">
+                Rewritten — we cannot verify this defeats any detector
+              </h4>
+              <textarea
+                readOnly
+                value={rewritten}
+                rows={8}
+                className="nw-evidence-panel mt-2 w-full resize-y p-3.5 font-mono text-sm"
+                style={{
+                  backgroundColor: 'var(--nw-surface-muted)',
+                  border: '1px solid var(--nw-border)',
+                  color: 'var(--nw-text)',
+                }}
+              />
+              <p className="mt-2 text-xs" style={{ color: 'var(--nw-text-muted)' }}>
+                Check it carefully before using it. Rewriting changes wording, and a model can
+                change meaning while doing so.
+              </p>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
     </div>
   );
 }

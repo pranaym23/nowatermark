@@ -14,7 +14,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { formatBytes } from '../../lib/bytes';
 import { ACCEPTED_MIME, MAX_FILE_BYTES, SLOW_FILE_BYTES } from '../../lib/config';
-import { countDetected, type ScanResult, type SignalCategory } from '../../lib/types';
+import { countDetected, type ScanResult } from '../../lib/types';
+import type { SignalCategory } from '../../lib/signals';
 import type { CleanPayload } from '../../lib/worker/protocol';
 import { ProcessingFailure, cleanFileBytes, releaseWorker, scanFileBytes } from '../../lib/worker/client';
 import { Button, Notice, OutcomePill, ResultGroup, Spinner } from './ui';
@@ -109,7 +110,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
     } catch (err) {
       if (run !== runIdRef.current) return;
       setError(
-        err instanceof ProcessingFailure ? err.message : 'We couldn’t read this image.',
+        err instanceof ProcessingFailure ? err.message : 'We couldn’t read this file.',
       );
       setPhase('error');
     }
@@ -208,7 +209,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
           }}
         >
           <label className="nw-file-label inline-flex cursor-pointer flex-col items-center gap-3">
-            <span className="text-lg font-semibold">Drop an image here</span>
+            <span className="text-lg font-semibold">Drop a file here</span>
             <span className="text-sm" style={{ color: 'var(--nw-text-muted)' }}>
               or choose a file
             </span>
@@ -232,7 +233,7 @@ export default function ImageScanner({ focus }: ImageScannerProps) {
 
           <p className="mt-5 text-sm font-medium">🔒 Your file stays on your device.</p>
           <p className="mt-1 text-xs" style={{ color: 'var(--nw-text-muted)' }}>
-            JPG, PNG and WebP · up to {formatBytes(MAX_FILE_BYTES)} · nothing is uploaded
+            JPG, PNG, WebP, SVG, Markdown and PDF · up to {formatBytes(MAX_FILE_BYTES)} · nothing is uploaded
           </p>
         </div>
       ) : null}

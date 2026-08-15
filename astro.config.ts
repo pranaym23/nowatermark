@@ -38,8 +38,13 @@ export default defineConfig({
         // nothing. The beacon posts its RUM payload to cloudflareinsights.com.
         // It carries page-level data only - never anything derived from a
         // user's file, which is processed entirely on-device.
-        "connect-src 'self' https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
+        // `connect-src 'self'` also covers /api/rewrite: the text-rewrite proxy
+        // is same-origin precisely so this directive does not have to name an
+        // external API. challenges.cloudflare.com is Turnstile, which guards it.
+        "connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
         "worker-src 'self' blob:",
+        // Turnstile renders its challenge inside an iframe.
+        "frame-src https://challenges.cloudflare.com",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'none'",
@@ -60,6 +65,8 @@ export default defineConfig({
           "'self'",
           'https://static.cloudflareinsights.com',
           'https://www.googletagmanager.com',
+          // Turnstile's api.js, loaded on demand by the text-rewrite panel.
+          'https://challenges.cloudflare.com',
         ],
       },
     },

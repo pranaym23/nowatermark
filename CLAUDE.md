@@ -45,6 +45,14 @@ Break any of these and the product stops being what it claims to be.
    processing, no file bytes/hashes/filenames/metadata in analytics. Verify by
    scanning a file with the network panel open — only static assets, the worker
    script, local `blob:` URLs and page-level analytics may appear.
+   **This rule is absolute and has no exception.**
+
+   There is exactly one carve-out, and it is not for files: **pasted text**, on
+   explicit per-use opt-in, sent to Google's Gemini API for the rewrite feature
+   (`functions/api/rewrite.ts`). It asks every time, shows the exact payload
+   first, and is never remembered. Anything beyond that — a file, a filename, a
+   hash, a metadata value, a "just this once" telemetry event — breaks the rule.
+   Decision made 2026-08-14; see `.briefs/10-text-rewrite-optin.md`.
 2. **`src/lib/signals.ts` is the single source of every product claim.** The UI,
    the cleaners and `/methodology` all read from it. Never hard-code a removal
    claim in a component, and never add one for a signal whose `remove` is false.
@@ -111,8 +119,13 @@ Cloudflare Pages → static HTML/CSS/JS → browser
 - `src/pages/[tool].astro` — one template drives all 14 tool pages from
   `src/lib/site.ts`. **Never fork the scanner per page.**
 
-"Cloudflare Workers" are banned (server compute). Browser **Web Workers** are
-encouraged and used — different thing, runs on-device.
+"Cloudflare Workers" are banned (server compute) with **one** documented
+exception: `functions/api/rewrite.ts`, the Pages Function that proxies the text
+rewrite so the Gemini API key can stay secret. A key cannot ship in client JS.
+Do not add a second server-side file without the same level of deliberation.
+
+Browser **Web Workers** are encouraged and used — different thing, runs
+on-device.
 
 ---
 
@@ -166,6 +179,14 @@ Two tools, and they differ:
 in the same commit — a false privacy claim is the most damaging possible bug on
 this site.
 
+The same rule covers the text-rewrite feature. `/privacy` currently states the
+**unpaid** Gemini API terms: Google uses submitted text to improve its products
+and **human reviewers may read it**. Moving the key to Google's paid tier changes
+that materially (no product-improvement use, brief abuse-detection logging only)
+and `/privacy`, `/methodology` and the consent panel in `TextScanner.tsx` must all
+be updated in that same commit. EEA/Switzerland/UK users already get the paid
+terms regardless.
+
 Verified: GA sends `page_view` only. Clicking the download link does **not**
 send a `file_download` event, because the href is a `blob:` URL with no
 extension for GA's trigger to match. That is an implementation detail of
@@ -177,7 +198,22 @@ Enhanced Measurement would make it robust.
 ## Open items
 
 - **Cookie consent** is not built. GA4 sets cookies without asking, which
-  generally requires prior consent in the EU/UK.
+  generally requires prior consent in the EU/UK. The text-rewrite feature
+  compounds this: a third-party processor on an EU-facing site with no consent
+  flow is a bigger exposure than either item alone.
+- **Text rewriting is off until three variables are set**, and it fails closed
+  in every partial state, so there is no unsafe ordering:
+  - `GEMINI_API_KEY` (secret) — without it the endpoint 503s.
+  - `TURNSTILE_SECRET_KEY` (secret) — **without it the endpoint 503s even when
+    the Gemini key is present.** An endpoint that spends the API key with no bot
+    check must never run; this is enforced in code, not by convention.
+  - `PUBLIC_TURNSTILE_SITE_KEY` (plaintext build variable) — without it the
+    rewrite UI is not merely hidden, it is tree-shaken out of the bundle.
+    Verified: `grep -rl "Rewrite with Gemini" dist/` is empty without it.
+
+  Turnstile's CSP entries are already in `astro.config.ts` (`script-src`,
+  `frame-src`, `connect-src`). Still confirm on the deployed URL with the console
+  open — a CSP failure is silent in the UI.
 - **Advertising** is stubbed (`AdSlot.astro`, `ADS_ENABLED = false`). Enabling
   it needs CSP changes in `astro.config.ts` and a privacy-page update.
 - **Event-level analytics** for the scan/clean funnel does not exist. Cloudflare

@@ -521,3 +521,157 @@ export function buildWebpFixture(opts: WebpFixtureOptions = {}): Uint8Array {
   const payloadLength = 4 + body.length;
   return concat([str('RIFF'), le32(payloadLength), str('WEBP'), body]);
 }
+
+/* ------------------------------------------------------------------ SVG */
+
+export interface SvgFixtureOptions {
+  withMetadata?: boolean;
+  withTitle?: boolean;
+  withGeneratorComment?: boolean;
+  withEditorAttrs?: boolean;
+  withScript?: boolean;
+  withEventHandler?: boolean;
+  withRemoteRef?: boolean;
+  /** Embed a fully-loaded JPEG (EXIF, GPS, XMP, IPTC, C2PA) as a data URI. */
+  withEmbeddedJpeg?: boolean;
+  withHiddenUnicode?: boolean;
+}
+
+/** The drawing content. Must survive cleaning byte-for-byte. */
+export const SVG_DRAWING = '<rect x="10" y="10" width="80" height="80" fill="#c4271a"/>';
+
+export function buildSvgFixture(opts: SvgFixtureOptions = {}): Uint8Array {
+  const {
+    withMetadata = true,
+    withTitle = true,
+    withGeneratorComment = true,
+    withEditorAttrs = true,
+    withScript = true,
+    withEventHandler = true,
+    withRemoteRef = true,
+    withEmbeddedJpeg = true,
+    withHiddenUnicode = false,
+  } = opts;
+
+  const jpeg = withEmbeddedJpeg ? buildJpegFixture() : null;
+  const b64 = jpeg ? Buffer.from(jpeg).toString('base64') : '';
+  const zwsp = withHiddenUnicode ? '​​⁠' : '';
+
+  const editorNs = withEditorAttrs
+    ? `\n     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"\n     xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"`
+    : '';
+  const editorAttrs = withEditorAttrs
+    ? `\n     inkscape:version="1.3.2" sodipodi:docname="secret-project-final.svg"`
+    : '';
+
+  return new TextEncoder().encode(
+    `<?xml version="1.0" encoding="UTF-8"?>
+${withGeneratorComment ? '<!-- Generator: Adobe Illustrator 28.0.0, SVG Export Plug-In -->\n' : ''}<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"${editorNs}
+     width="100" height="100" viewBox="0 0 100 100"${editorAttrs}${
+       withEventHandler ? '\n     onload="fetch(\'https://tracker.example.com/opened\')"' : ''
+     }>
+${withTitle ? `  <title>My Secret Drawing${zwsp}</title>\n  <desc>Drawn by ${EXPECTED.artist}</desc>\n` : ''}${
+      withMetadata ? `  <metadata>\n${buildXmp(true)}\n  </metadata>\n` : ''
+    }${withScript ? `  <script>fetch('https://tracker.example.com/run')</script>\n` : ''}  ${SVG_DRAWING}
+${jpeg ? `  <image x="0" y="0" width="50" height="50" xlink:href="data:image/jpeg;base64,${b64}"/>\n` : ''}${
+      withRemoteRef
+        ? '  <image x="50" y="0" width="50" height="50" href="https://tracker.example.com/pixel.png"/>\n'
+        : ''
+    }</svg>
+`,
+  );
+}
+
+/* ------------------------------------------------------------------ PDF */
+
+function xrefRow(offset: number, gen: number, kind: 'n' | 'f'): string {
+  return `${String(offset).padStart(10, '0')} ${String(gen).padStart(5, '0')} ${kind} \n`;
+}
+
+export const PDF_EXPECTED = {
+  title: 'Quarterly Report',
+  author: 'Jane Doe',
+  creator: 'ChatGPT',
+  producer: 'NoWatermark Fixture Writer',
+  created: 'D:20260813103000Z',
+} as const;
+
+interface PdfBody {
+  text: string;
+  offsets: number[];
+}
+
+/** Objects 1-4: catalog, pages, page, info. */
+function pdfBody(startAt: number, info: string, catalog: string): PdfBody {
+  const objects = [
+    catalog,
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] >>',
+    info,
+  ];
+  const offsets: number[] = [];
+  let text = '';
+  let at = startAt;
+  objects.forEach((body, i) => {
+    const chunk = `${i + 1} 0 obj\n${body}\nendobj\n`;
+    offsets.push(at);
+    text += chunk;
+    at += chunk.length;
+  });
+  return { text, offsets };
+}
+
+const FULL_INFO =
+  `<< /Title (${PDF_EXPECTED.title}) /Author (${PDF_EXPECTED.author}) ` +
+  `/Creator (${PDF_EXPECTED.creator}) /Producer (${PDF_EXPECTED.producer}) ` +
+  `/CreationDate (${PDF_EXPECTED.created}) /CustomTag (internal-only) >>`;
+
+export interface PdfFixtureOptions {
+  /** Append a second revision whose /Info has had the author "removed". */
+  withIncrementalUpdate?: boolean;
+  withEncryption?: boolean;
+  withJavaScript?: boolean;
+  info?: string;
+}
+
+export function buildPdfFixture(opts: PdfFixtureOptions = {}): Uint8Array {
+  const { withIncrementalUpdate = false, withEncryption = false, withJavaScript = false } = opts;
+
+  const header = '%PDF-1.4\n';
+  // Built before offsets are computed: patching it afterwards would shift every
+  // object and invalidate the xref table we are about to write.
+  const catalog = withJavaScript
+    ? '<< /Type /Catalog /Pages 2 0 R /OpenAction << /S /JavaScript /JS (app.alert\\(1\\)) >> >>'
+    : '<< /Type /Catalog /Pages 2 0 R >>';
+  const body = pdfBody(header.length, opts.info ?? FULL_INFO, catalog);
+
+  const xrefAt = header.length + body.text.length;
+  let xref = 'xref\n0 5\n' + xrefRow(0, 65535, 'f');
+  for (const off of body.offsets) xref += xrefRow(off, 0, 'n');
+
+  const trailerBits = ['/Size 5', '/Root 1 0 R', '/Info 4 0 R'];
+  if (withEncryption) trailerBits.push('/Encrypt 9 0 R');
+  const trailer = `trailer\n<< ${trailerBits.join(' ')} >>\nstartxref\n${xrefAt}\n%%EOF\n`;
+
+  let pdf = header + body.text + xref + trailer;
+
+  if (withIncrementalUpdate) {
+    /*
+     * The incremental-write trap, exactly as a metadata "remover" produces it:
+     * a fresh /Info with the author gone, appended on top. The original object
+     * is untouched and still readable earlier in the file.
+     */
+    const cleanedAt = pdf.length;
+    const cleaned = `4 1 obj\n<< /Title (${PDF_EXPECTED.title}) >>\nendobj\n`;
+    const updateXrefAt = cleanedAt + cleaned.length;
+
+    const updateXref = 'xref\n0 1\n' + xrefRow(0, 65535, 'f') + '4 1\n' + xrefRow(cleanedAt, 1, 'n');
+    const updateTrailer =
+      `trailer\n<< /Size 5 /Root 1 0 R /Info 4 1 R /Prev ${xrefAt} >>\n` +
+      `startxref\n${updateXrefAt}\n%%EOF\n`;
+
+    pdf += cleaned + updateXref + updateTrailer;
+  }
+
+  return new TextEncoder().encode(pdf);
+}

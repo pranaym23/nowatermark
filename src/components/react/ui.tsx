@@ -35,6 +35,16 @@ const OUTCOME_STYLE: Record<SignalOutcome, { label: string; fg: string; glyph: s
   kept: { label: 'Kept', fg: 'var(--nw-text-muted)', glyph: '•' },
   remaining: { label: 'Still present', fg: 'var(--nw-detected)', glyph: '!' },
   unverifiable: { label: 'Unable to verify', fg: 'var(--nw-unknown)', glyph: '?' },
+  /*
+   * Deliberately not styled as a success. A rewrite changes the text but we
+   * have no detector to confirm it defeated anything, so this must never read
+   * like the green "Removed ✓" beside it.
+   */
+  rewritten_unverified: {
+    label: 'Rewritten — unverified',
+    fg: 'var(--nw-unknown)',
+    glyph: '~',
+  },
   absent: { label: 'Not present', fg: 'var(--nw-text-muted)', glyph: '–' },
 };
 
