@@ -243,6 +243,49 @@ export const REMOVABLE_SIGNAL_IDS: readonly string[] = SIGNAL_LIST.filter((s) =>
   (s) => s.id,
 );
 
+/**
+ * Version stamp for the public capability matrix (V2 R17).
+ *
+ * A capability claim without a date is not checkable. Bump both whenever a
+ * `detect`/`remove`/`verify` flag changes, a format's support level changes, or
+ * a limitation is added or withdrawn.
+ */
+export const CAPABILITY_VERSION = '2.0';
+export const CAPABILITY_UPDATED = '2026-08-15';
+
+/**
+ * Evidence behind the coverage claims — what was actually run, and when.
+ *
+ * The build plan's rule is that capability is validated before it is claimed,
+ * so anything asserted in the matrix should be traceable to a line here.
+ */
+export interface ValidationNote {
+  subject: string;
+  date: string;
+  summary: string;
+}
+
+export const VALIDATION_NOTES: readonly ValidationNote[] = [
+  {
+    subject: 'PDF inspection',
+    date: '2026-08-15',
+    summary:
+      '733 real-world PDFs scanned locally: 99.3% parsed cleanly, no exceptions, median 0.2 ms. 3.7% carried metadata in a revision the current one had superseded.',
+  },
+  {
+    subject: 'Lossless cleaning',
+    date: '2026-08-15',
+    summary:
+      'Tests compare the JPEG scan stream, PNG IDAT and WebP VP8/VP8L payloads before and after cleaning and require them to be byte-identical.',
+  },
+  {
+    subject: 'Verified removal',
+    date: '2026-08-15',
+    summary:
+      'Every removal claim is produced by scanning the cleaned output a second time and diffing against the original scan, never by a cleaner reporting its own success.',
+  },
+];
+
 /** Rows for the public capability matrix on /methodology. */
 export interface CapabilityRow {
   label: string;

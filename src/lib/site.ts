@@ -709,6 +709,7 @@ export const FOOTER_LEARN: FooterLink[] = [
 ];
 
 export const FOOTER_SITE: FooterLink[] = [
+  { href: '/capabilities', label: 'Capabilities' },
   { href: '/methodology', label: 'Methodology' },
   { href: '/privacy', label: 'Privacy' },
   { href: '/terms', label: 'Terms' },

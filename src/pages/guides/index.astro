@@ -6,6 +6,19 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 
 const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 
+/*
+ * Only types that change what the reader should expect get a badge. A plain
+ * guide gets none — labelling the default adds noise without adding meaning.
+ */
+const TYPE_LABEL: Partial<Record<string, string>> = {
+  lab: 'Lab report',
+  comparison: 'Comparison',
+  answer: 'Quick answer',
+};
+
+const readable = (value: Date) =>
+  value.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+
 const title = 'Guides — AI Watermarks, Provenance and Metadata | NoWatermark';
 const description =
   'Plain explanations of SynthID, C2PA, Content Credentials, EXIF and AI image metadata — including what can and cannot be removed.';
@@ -27,8 +40,19 @@ const description =
       {
         guides.map((guide) => (
           <a href={`/guides/${guide.id}`} class="nw-panel group">
-            <h2 class="font-semibold group-hover:underline">{guide.data.title}</h2>
+            {TYPE_LABEL[guide.data.contentType] && (
+              <span class="nw-panel-label block">{TYPE_LABEL[guide.data.contentType]}</span>
+            )}
+            <h2 class="mt-1 font-semibold group-hover:underline">{guide.data.title}</h2>
             <p class="mt-1.5 text-sm nw-muted">{guide.data.summary}</p>
+            {guide.data.lastTested && (
+              <p class="mt-2 text-xs nw-muted">
+                Last tested{' '}
+                <time datetime={guide.data.lastTested.toISOString()}>
+                  {readable(guide.data.lastTested)}
+                </time>
+              </p>
+            )}
           </a>
         ))
       }

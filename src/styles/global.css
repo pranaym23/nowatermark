@@ -183,6 +183,35 @@
     text-decoration: underline;
     text-underline-offset: 2px;
   }
+  /*
+   * Code blocks. Syntax highlighting is off (see astro.config.ts), so these are
+   * plain <pre><code> and take their colours from tokens like everything else,
+   * which is what keeps them legible in both themes.
+   *
+   * The guides use them only for structural diagrams, which are wide. They must
+   * scroll inside their own box — never widen the page.
+   */
+  .nw-content pre {
+    background: var(--nw-surface-muted, var(--nw-paper));
+    border: 1px solid var(--nw-rule);
+    color: var(--nw-text);
+    font-size: .8125rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    padding: 1rem;
+  }
+  .nw-content pre code {
+    background: none;
+    font-size: inherit;
+    padding: 0;
+    white-space: pre;
+  }
+  .nw-content :not(pre) > code {
+    background: var(--nw-surface-muted, var(--nw-paper));
+    border: 1px solid var(--nw-rule);
+    font-size: .875em;
+    padding: .1em .3em;
+  }
   .nw-content ul,
   .nw-content ol {
     padding-inline-start: 1.3em;
