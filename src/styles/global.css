@@ -384,6 +384,25 @@
     .nw-consent-button { flex: 1; }
   }
 
+  /*
+   * Hero proof list. Each line is a claim the reader can check, so it is set as
+   * a list of statements rather than as marketing bullets — no icons, no ticks,
+   * nothing that decorates a claim instead of supporting it.
+   */
+  .nw-proof {
+    display: grid;
+    gap: .4rem;
+    font-size: .875rem;
+    color: var(--nw-text-muted);
+    list-style: none;
+    padding: 0;
+  }
+  .nw-proof li {
+    border-inline-start: 3px solid var(--nw-spot);
+    padding-inline-start: .7rem;
+  }
+  .nw-proof strong { color: var(--nw-text); font-weight: 650; }
+
   .nw-evidence {
     border-top: 3px solid var(--nw-gutter);
     padding-top: 1.5rem;

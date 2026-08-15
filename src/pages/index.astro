@@ -67,12 +67,23 @@ const schema = [
     <div class="nw-panel-grid grid-cols-1 md:grid-cols-[1.1fr_.9fr]">
       <div class="nw-panel nw-tone flex min-h-80 flex-col justify-between">
         <div>
-          <p class="nw-panel-label">Metadata investigation</p>
+          <p class="nw-panel-label">Publish-ready check</p>
           <h1 class="mt-4 text-4xl font-extrabold sm:text-5xl">Every file is hiding something.</h1>
           <p class="mt-4 max-w-xl text-lg nw-muted">
-            Drop an image to see the metadata and AI provenance it carries, or paste text to
-            find the invisible characters hiding in it. Both run entirely in your browser.
+            Make an image, document or piece of text ready to publish: see what it reveals about
+            you and what it declares about how it was made, then remove what can be removed.
           </p>
+
+          {/*
+            R30 wants the strongest proof beside the promise, not eight screens
+            below it. Three claims, each one checkable: the first by watching
+            the network panel, the second and third by test.
+          */}
+          <ul class="nw-proof mt-6">
+            <li><strong>Nothing is uploaded.</strong> There is no upload endpoint.</li>
+            <li><strong>Nothing is re-encoded.</strong> Image quality is untouched.</li>
+            <li><strong>Removal is re-scanned</strong> before we call it removed.</li>
+          </ul>
         </div>
         <span class="nw-stamp self-start">Case open</span>
       </div>
